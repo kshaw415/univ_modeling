@@ -1,11 +1,12 @@
 import numpy as np 
+import random 
 
 class Agent: 
     '''
     class for individual agents. 
 
     Fields: 
-
+        
     
     '''
 
