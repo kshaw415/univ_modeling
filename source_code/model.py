@@ -21,30 +21,43 @@ if __name__ == "__main__":
 
     # Number of agents
     num_agents = 10
+    agents = []
+    agent_positions = []
 
     # Initialize agents with random positions
-    agents = np.random.rand(num_agents, 2) * 10
+    for i in range(num_agents): 
+        agent_id = i
+        infected_status = np.random.choice([0, 1, 2]) # CAN CHANGE FOR MORE WEIGHTED
+        agent = Agent.Agent(agent_id, infected_status)
+        agents.append(agent)
+        agent_positions.append(agent.position)
 
-    # create initial plot 
+        # create initial plot 
     trace = go.Scatter(
-        x = agents[:,0], y = agents[:, 1], mode='markers', marker=dict(size=10)
+        x = [agent.position[0] for agent in agents], 
+        y = [agent.position[1] for agent in agents], 
+        mode='markers', marker=dict(size=10)
     )
 
     # layout 
     layout = go.Layout(
-        title='Random Walk Animation', xaxis=dict(range=[0,1]), yaxis=dict(range=[0,1]),)
+        title='Random Walk Animation', 
+        xaxis=dict(range=[0,1]), 
+        yaxis=dict(range=[0,1]),)
     
     # create subplot 
-    fig = make_subplots(rows=1, cols=1, subplot_titles=['Random Walk Animation!'], 
+    fig = make_subplots(
+        rows=1, 
+        cols=1, 
+        subplot_titles=['Random Walk Animation!'], 
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
-    
+
     fig.update_layout(
         xaxis=dict(range=[-20, 20]),  # Adjust the range as needed
         yaxis=dict(range=[-20, 20])   # Adjust the range as needed
-)
-
-
+        )
+    
     # Frames for animation
     frames = []
 
@@ -53,14 +66,17 @@ if __name__ == "__main__":
     for step in range(num_steps):
         for i in range(num_agents):
             # update position 
-            agents[i] = random_walk(agents[i])
-        
+            agent = agents[i]
+            agent_positions[i] = agent.random_walk() # this is def sus 
+            # HAVEN'T CALCULATED DISTANCES YET 
+
         # Create a frame for the current step
         frame = go.Frame(data=[
-            go.Scatter(x=agents[:, 0], 
-                       y=agents[:, 1], 
-                       mode='markers')],
-            name=f'Frame {step+1}')
+            go.Scatter(
+                x = [agent.position[0] for agent in agents], 
+                y = [agent.position[1] for agent in agents], 
+                mode='markers')],
+                name=f'Frame {step+1}')
         
         frames.append(frame)
 
