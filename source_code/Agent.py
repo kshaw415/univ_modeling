@@ -1,6 +1,7 @@
 import numpy as np 
 import random 
 import math 
+from collections import defaultdict
 
 class Agent: 
     '''
@@ -23,7 +24,7 @@ class Agent:
         '''
         self.id = id
         self.infected = infected
-        self.contacts = {}
+        self.contacts = defaultdict(list)
         self.position = np.random.rand(1, 2) # x, y location 
         self.position = self.position.tolist()[0]
 

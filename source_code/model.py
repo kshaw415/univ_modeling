@@ -3,6 +3,7 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import numpy as np
 import Agent
+import pprint
 
 # Function to perform a random walk for an agent
 def random_walk(position, step_size=1):
@@ -23,6 +24,7 @@ if __name__ == "__main__":
     num_agents = 10
     agents = []
     agent_positions = []
+    THRESHOLD = 6
 
     # Initialize agents with random positions
     for i in range(num_agents): 
@@ -61,6 +63,7 @@ if __name__ == "__main__":
     # Frames for animation
     frames = []
 
+    dist_list = []
     # Perform random walk for a certain number of steps
     num_steps = 100
     for step in range(num_steps):
@@ -68,15 +71,21 @@ if __name__ == "__main__":
             # update position 
             agent = agents[i]
             agent_positions[i] = agent.random_walk() # this is def sus 
-            # HAVEN'T CALCULATED DISTANCES YET 
-
+            if i == num_agents - 1: # last agent, this is also awk
+                break 
+            else: 
+                dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
+                dist_list.append(dist)
+            
+        # print(dist_list) 
+        # print("dist list length: ", len(dist_list))
         # Create a frame for the current step
         frame = go.Frame(data=[
             go.Scatter(
                 x = [agent.position[0] for agent in agents], 
                 y = [agent.position[1] for agent in agents], 
                 mode='markers')],
-                name=f'Frame {step+1}')
+                name=f'Frame {step + 1}')
         
         frames.append(frame)
 
@@ -91,6 +100,9 @@ if __name__ == "__main__":
                                frame=dict(duration=200, redraw=True), 
                                fromcurrent=True)])])])
     
-        
+    
+    # pprint.pprint(agents[i].contacts)
     fig.show()
+
+    
 
