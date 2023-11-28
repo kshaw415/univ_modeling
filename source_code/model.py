@@ -35,6 +35,12 @@ if __name__ == "__main__":
     fig = make_subplots(rows=1, cols=1, subplot_titles=['Random Walk Animation!'], 
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
+    
+    fig.update_layout(
+        xaxis=dict(range=[-20, 20]),  # Adjust the range as needed
+        yaxis=dict(range=[-20, 20])   # Adjust the range as needed
+)
+
 
     # Frames for animation
     frames = []
