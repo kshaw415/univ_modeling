@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import numpy as np
+import Agent
 
 # Function to perform a random walk for an agent
 def random_walk(position, step_size=1):
@@ -15,6 +16,8 @@ def random_walk(position, step_size=1):
     return new_x, new_y
 
 if __name__ == "__main__": 
+    test_agent = Agent.Agent(0, 0)
+    print(test_agent.position)
 
     # Number of agents
     num_agents = 10
