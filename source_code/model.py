@@ -3,23 +3,11 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import numpy as np
 import Agent
+import Barrier
 import pprint
 
-# Function to perform a random walk for an agent
-def random_walk(position, step_size=1):
-    # Generate random angles for movement
-    angle = np.random.uniform(0, 2 * np.pi)
-    
-    # Calculate the new position based on the random angle
-    new_x = position[0] + step_size * np.cos(angle)
-    new_y = position[1] + step_size * np.sin(angle)
-    
-    return new_x, new_y
 
 if __name__ == "__main__": 
-    test_agent = Agent.Agent(0, 0)
-    print(test_agent.position)
-
     # Number of agents
     num_agents = 10
     agents = []
@@ -34,11 +22,22 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
+    barrier = Barrier.Barrier(x=0.0, y=0.0, width=0.1, height=10) # can adjust 
         # create initial plot 
     trace = go.Scatter(
         x = [agent.position[0] for agent in agents], 
         y = [agent.position[1] for agent in agents], 
         mode='markers', marker=dict(size=10)
+    )
+
+    # barrier trace 
+    barrier_trace = go.Scatter(
+        x=[barrier.x, barrier.x + barrier.width, barrier.x + barrier.width, barrier.x, barrier.x],
+        y=[barrier.y, barrier.y, barrier.y + barrier.height, barrier.y + barrier.height, barrier.y],
+        mode='lines',
+        line=dict(color='red', width=2),
+        fill='toself',
+        name='Barrier'
     )
 
     # layout 
@@ -54,6 +53,7 @@ if __name__ == "__main__":
         subplot_titles=['Random Walk Animation!'], 
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
+    fig.add_trace(barrier_trace)
 
     fig.update_layout(
         xaxis=dict(range=[-20, 20]),  # Adjust the range as needed
@@ -70,15 +70,13 @@ if __name__ == "__main__":
         for i in range(num_agents):
             # update position 
             agent = agents[i]
-            agent_positions[i] = agent.random_walk() # this is def sus 
+            agent_positions[i] = agent.random_walk(barrier=barrier) # this is def sus 
             if i == num_agents - 1: # last agent, this is also awk
                 break 
             else: 
                 dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
                 dist_list.append(dist)
             
-        # print(dist_list) 
-        # print("dist list length: ", len(dist_list))
         # Create a frame for the current step
         frame = go.Frame(data=[
             go.Scatter(
@@ -100,9 +98,7 @@ if __name__ == "__main__":
                                frame=dict(duration=200, redraw=True), 
                                fromcurrent=True)])])])
     
-    
     # pprint.pprint(agents[i].contacts)
     fig.show()
 
     
-
