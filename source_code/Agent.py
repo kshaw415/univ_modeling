@@ -92,10 +92,10 @@ class Agent:
         random_num = np.random.rand()
 
         ## TO DO: currently NO EXPOSURE TIME, JUST 0 = SUSCEPTIBLE, 2 = INFECTED. 
-        infected = random_num < adj_p # bool, T if infected 
-        if infected: 
-            self.infected = 2
+        exposed = random_num < adj_p # bool, T if infected 
+        if exposed: 
+            self.infected = 1
 
-        return infected 
+        return exposed 
 
 

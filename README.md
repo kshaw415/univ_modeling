@@ -8,3 +8,5 @@ Goal/Focus:
 - add in masking as a toggle (yes masks, masking in X scenarios?)
 - analyzing data received from ABM (figures on time-based plots, etc. )  
 
+## To-Do: 
+- get_exposed() uses probability of transmission to calculate exposure not infected status. 
