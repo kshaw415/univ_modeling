@@ -53,9 +53,6 @@ class Agent:
         
         '''
         # TO DO: directionality difference? 
-        # if distance already calculated, do not execute
-        # if agent2 in self.contacts[cur_time]: 
-        #     return self.contacts[] # MAYBE CHANGE??
         distance = math.dist(self.position, agent2.position)
         # determine if we identify as a contact 
         if distance <= threshold: 
@@ -70,19 +67,35 @@ class Agent:
 
         return distance
     
-    # def transmission_prob(self, r0): 
-    #     '''
-    #     Calculates probability that infection occurs based on contacts
-    #     '''
-    #     # if this agent cannot infect
-    #     if self.infected == 0 or self.infected == 1: 
-    #         return self # idk if want to change, just do nothing for transmission
+    def get_exposed(self, p_transmission): 
+        '''
+        Calculates probability that infection occurs based on contacts via direct
+        transmission. 
+        Binomial model of transmission. Transmission calculated and passed as input. 
+        '''
+        # if this agent cannot infect
+        if self.infected == 0 or self.infected == 1: 
+            return self # idk if want to change, just do nothing for transmission
+        
+        # calculate transmission_prob 
+        # 
+        # go through contacts at desired time 
+        infected_contacts = 0 # counter 
+        for contact in self.contacts[self.cur_time]: 
+            # evaluate if contact is a risk 
+            if contact.infected == 2: 
+                infected_contacts += 1 
+        ## NOT NECESSARY TO ADJUST BUT THIS WAS JUST A THOUGHT
+        # adjust transmission probability based on number of contacts?? 
+        adj_p = p_transmission + 0.05*infected_contacts 
+        adj_p = max(0, min(1, adj_p)) # ensures adj_p is between 0 and 1
+        random_num = np.random.rand()
 
-    #     # go through contacts at desired time 
-    #     for contact in self.contacts[self.cur_time]: 
-    #         # evaluate if contact is a risk 
+        ## TO DO: currently NO EXPOSURE TIME, JUST 0 = SUSCEPTIBLE, 2 = INFECTED. 
+        infected = random_num < adj_p # bool, T if infected 
+        if infected: 
+            self.infected = 2
 
-    #         # if yes --> calculate transmission probability
-    #             # using r0 
+        return infected 
 
 
