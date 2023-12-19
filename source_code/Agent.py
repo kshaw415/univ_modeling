@@ -94,35 +94,31 @@ class Agent:
                 self.exposure_time.append(self.cur_time)
             
         return self 
-
-        
-        
+    
+    def det_transmission(self): 
         '''
-        Binomial model of transmission. Transmission calculated and passed as input. 
+        Determines if an agent that is exposed becomes infected. 
+        Updates Agent's infected status
 
-        # if this agent cannot infect
-        if self.infected == 0 or self.infected == 1: 
-            return self # idk if want to change, just do nothing for transmission
+        Output: Boolean
+            True --> if agent is currently infected
+            False --> if agent is not infected (can still be exposed) 
+        '''
+        # agent is already infected - returns True for infected 
+        if self.infected == 2: 
+            return True 
         
-        # calculate transmission_prob 
-        # 
-        # go through contacts at desired time 
-        infected_contacts = 0 # counter 
-        for contact in self.contacts[self.cur_time]: 
-            # evaluate if contact is a risk 
-            if contact.infected == 2: 
-                infected_contacts += 1 
-        ## NOT NECESSARY TO ADJUST BUT THIS WAS JUST A THOUGHT
-        # adjust transmission probability based on number of contacts?? 
-        adj_p = p_transmission + 0.05*infected_contacts
-        adj_p = max(0, min(1, adj_p)) # ensures adj_p is between 0 and 1
-        random_num = np.random.rand()
+        # no exposure 
+        elif self.infected == 0: 
+            return False 
+    
+        else: 
+            random_num = np.random.rand()
+            p_transmit = 0.3 # CAN CHANGE - perhaps make threshold value, user input
+            if random_num < p_transmit: # transmission occurs 
+                self.infected = 2 
+        
+        return True if self.infected == 2 else False 
 
-        ## TO DO: currently NO EXPOSURE TIME, JUST 0 = SUSCEPTIBLE, 2 = INFECTED. 
-        exposed = random_num < adj_p # bool, T if infected 
-        if exposed: 
-            self.infected = 1
 
-        return exposed 
-'''
 
