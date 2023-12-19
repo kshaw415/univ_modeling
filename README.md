@@ -9,4 +9,5 @@ Goal/Focus:
 - analyzing data received from ABM (figures on time-based plots, etc. )  
 
 ## To-Do: 
-- get_exposed() uses probability of transmission to calculate exposure not infected status. 
+- det_transmission: return True/False based on infected status (can seem misleading with function name)
+- Each time step need to calculate exposure status (ie after 3 days exposure no transmission, go back to susceptible) 
