@@ -15,7 +15,7 @@ def transmission_prob(I, I_N, N, T, S):
     a = recovery rate
     S = number of susceptible indviduals
     I = number of infected individuals
-    N = total number of individuasl 
+    N = total number of individuals 
     I_N = number of new infections since previous sampling 
     T = sampling interval (1 day = 1) 
     """

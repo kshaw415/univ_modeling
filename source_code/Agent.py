@@ -27,17 +27,23 @@ class Agent:
         self.position = np.random.rand(1, 2) # x, y location 
         self.position = self.position.tolist()[0]
         self.cur_time = 0
+        self.exposure_time = []
 
     def __str__(self): 
         return f"{self.id} infected_status: {self.infected}"
     
     def random_walk(self, barrier=None): 
+        '''
+        update: check if barrier collision happens before calculating new angle 
+        find behavior that ALWAYS redirects agent that next proposed coordinate is not on 
+        otherside of the behavior 
+        '''
         angle = np.random.uniform(0, 2 * np.pi)
         step_size = 1; # STEP SIZE, CHANGE IF DESIRED 
         new_x = self.position[0] + step_size * np.cos(angle)
         new_y = self.position[1] + step_size * np.sin(angle)
 
-        # chcek for barrier collision 
+        # check for barrier collision 
         if barrier and barrier.is_collision(self):
             # Reflect the direction of movement upon collision
             angle = np.arctan2(self.position[1] - barrier.y, self.position[0] - barrier.x) + np.pi
@@ -67,12 +73,33 @@ class Agent:
 
         return distance
     
-    def get_exposed(self, p_transmission): 
+    def get_exposed(self): 
         '''
-        Calculates probability that infection occurs based on contacts via direct
-        transmission. 
+        Determines if current agent is exposed based on close contacts 
+
+        returns self with updated self.infected and self.exposure_time status 
+        '''
+        # if agent itself is already infected or 
+        if self.infected == 2:
+            return self  
+        else: 
+            # Susceptible 
+            infected_contacts = 0 # counter
+            for contact in self.contacts[self.cur_time]: 
+                if contact.infected == 2: 
+                    infected_contacts += 1
+
+            if infected_contacts > 0:
+                self.infected == 1
+                self.exposure_time.append(self.cur_time)
+            
+        return self 
+
+        
+        
+        '''
         Binomial model of transmission. Transmission calculated and passed as input. 
-        '''
+
         # if this agent cannot infect
         if self.infected == 0 or self.infected == 1: 
             return self # idk if want to change, just do nothing for transmission
@@ -87,7 +114,7 @@ class Agent:
                 infected_contacts += 1 
         ## NOT NECESSARY TO ADJUST BUT THIS WAS JUST A THOUGHT
         # adjust transmission probability based on number of contacts?? 
-        adj_p = p_transmission + 0.05*infected_contacts 
+        adj_p = p_transmission + 0.05*infected_contacts
         adj_p = max(0, min(1, adj_p)) # ensures adj_p is between 0 and 1
         random_num = np.random.rand()
 
@@ -97,5 +124,5 @@ class Agent:
             self.infected = 1
 
         return exposed 
-
+'''
 
