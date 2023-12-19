@@ -34,21 +34,21 @@ class Agent:
     
     def random_walk(self, barrier=None): 
         '''
-        update: check if barrier collision happens before calculating new angle 
-        find behavior that ALWAYS redirects agent that next proposed coordinate is not on 
-        otherside of the behavior 
+        update: 
         '''
-        angle = np.random.uniform(0, 2 * np.pi)
         step_size = 1; # STEP SIZE, CHANGE IF DESIRED 
+        # check for barrier collision 
+        angle = np.random.uniform(0, 2 * np.pi)
+        collision_status = barrier.is_collision(self) 
+        while barrier and collision_status: 
+            # Reflect the direction of movement upon collision
+            # angle = np.random.uniform(0, 2 * np.pi)
+            new_x = self.position[0] + step_size * -np.cos(angle)
+            new_y = self.position[1] + step_size * np.sin(-angle)
+            collision_status = barrier.is_collision(self)
+
         new_x = self.position[0] + step_size * np.cos(angle)
         new_y = self.position[1] + step_size * np.sin(angle)
-
-        # check for barrier collision 
-        if barrier and barrier.is_collision(self):
-            # Reflect the direction of movement upon collision
-            angle = np.arctan2(self.position[1] - barrier.y, self.position[0] - barrier.x) + np.pi
-            new_x = self.position[0] + step_size * np.cos(angle)
-            new_y = self.position[1] + step_size * np.sin(angle)
 
         self.position = [new_x, new_y] # update Agent location 
         return self.position

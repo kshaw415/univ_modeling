@@ -6,25 +6,6 @@ import Agent
 import Barrier
 import pprint
 
-def transmission_prob(I, I_N, N, T, S): 
-    """
-    Function to calcualte probability. Taken from Method 1 from 
-    https://www.nature.com/articles/s41598-017-09209-x#ref-CR5
-
-    B = disease transmission coefficient (transmission rate)
-    a = recovery rate
-    S = number of susceptible indviduals
-    I = number of infected individuals
-    N = total number of individuals 
-    I_N = number of new infections since previous sampling 
-    T = sampling interval (1 day = 1) 
-    """
-    B = -1*np.log(1 - I_N / I) / (T * S / N)
-    
-    P = 1 - np.exp(-(B * I) / N) # probability of infection for each susceptible individual 
-    return P
-
-
 if __name__ == "__main__": 
     # Number of agents
     num_agents = 10
@@ -40,7 +21,11 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    barrier = Barrier.Barrier(x=0.0, y=0.0, width=0.1, height=10) # can adjust 
+    barrier = Barrier.Barrier(x=-10.0, y=0.0, width=0.1, height=10) # can adjust 
+    barrier2 = Barrier.Barrier(x=10.0,y=0.0, width=0.1, height=10)
+    barrier3 = Barrier.Barrier(x=0, y=10, width=10, height=0.1)
+    barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
+       
         # create initial plot 
     trace = go.Scatter(
         x = [agent.position[0] for agent in agents], 
@@ -58,6 +43,33 @@ if __name__ == "__main__":
         name='Barrier'
     )
 
+    barrier_trace2 = go.Scatter(
+        x=[barrier2.x, barrier2.x + barrier2.width, barrier2.x + barrier2.width, barrier2.x, barrier2.x],
+        y=[barrier2.y, barrier2.y, barrier2.y + barrier2.height, barrier2.y + barrier2.height, barrier2.y],
+        mode='lines',
+        line=dict(color='blue', width=2),
+        fill='toself',
+        name='Barrier2'
+    )
+
+    barrier_trace3 = go.Scatter(
+        x=[barrier3.x, barrier3.x + barrier3.width, barrier3.x + barrier3.width, barrier3.x, barrier3.x],
+        y=[barrier3.y, barrier3.y, barrier3.y + barrier3.height, barrier3.y + barrier3.height, barrier3.y],
+        mode='lines',
+        line=dict(color='green', width=2),
+        fill='toself',
+        name='Barrier3'
+    )
+
+    barrier_trace4 = go.Scatter(
+        x=[barrier4.x, barrier4.x + barrier4.width, barrier4.x + barrier4.width, barrier4.x, barrier4.x],
+        y=[barrier4.y, barrier4.y, barrier4.y + barrier4.height, barrier4.y + barrier4.height, barrier4.y],
+        mode='lines',
+        line=dict(color='purple', width=2),
+        fill='toself',
+        name='Barrier4'
+    )
+
     # layout 
     layout = go.Layout(
         title='Random Walk Animation', 
@@ -72,6 +84,9 @@ if __name__ == "__main__":
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
     fig.add_trace(barrier_trace)
+    fig.add_trace(barrier_trace2)
+    fig.add_trace(barrier_trace3)
+    fig.add_trace(barrier_trace4)
 
     fig.update_layout(
         xaxis=dict(range=[-20, 20]),  # Adjust the range as needed
@@ -94,7 +109,6 @@ if __name__ == "__main__":
             else: 
                 dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
                 dist_list.append(dist)
-            
         # Create a frame for the current step
         frame = go.Frame(data=[
             go.Scatter(
@@ -118,5 +132,4 @@ if __name__ == "__main__":
     
     # pprint.pprint(agents[i].contacts)
     fig.show()
-
     

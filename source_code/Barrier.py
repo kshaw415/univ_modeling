@@ -1,3 +1,5 @@
+import math 
+
 class Barrier:
     '''
     class for Barriers that Agent class interacts with (think walls, etc.). 
@@ -20,13 +22,24 @@ class Barrier:
         """
         Check if agent collides with barrier 
 
-        # TO DO: fix. 
+        # TO DO: fix. DISTANCE ONLY DOING BASED ON INITIAL POSITIO - NOT INCLUDING 
+        WIDTH OR HEIGHT!!! 
         """
-        if (agent.position[0] < self.x + self.width and 
-            agent.position[1] < self.y + self.height and 
-            agent.position[1] > self.y): 
+        
+
+
+        distance = math.dist(agent.position, [self.x, self.y])
+
+        if distance < 0.1: 
             return True
-        return False 
+        else: 
+            return False 
+
+        # if (agent.position[0] < self.x + self.width and 
+        #     agent.position[1] < self.y + self.height and 
+        #     agent.position[1] > self.y): 
+        #     return True
+        # return False 
     
 
 
