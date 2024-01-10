@@ -25,9 +25,9 @@ class Barrier:
         # TO DO: fix. DISTANCE ONLY DOING BASED ON INITIAL POSITIO - NOT INCLUDING 
         WIDTH OR HEIGHT!!! 
         """
-        
 
 
+        # this needs to re-implement to vector math + dot product shtuff
         distance = math.dist(agent.position, [self.x, self.y])
 
         if distance < 0.1: 

@@ -20,6 +20,7 @@ class Agent:
             infected --> int, 0 if Susceptible, 1 if exposed, 2 if infected
             contacts --> dict, contains all contacts. key is time step, value 
                                 is list of Agent 
+            exposure_time --> list of times Agent has been exposed
         '''
         self.id = id
         self.infected = infected
@@ -75,7 +76,7 @@ class Agent:
     
     def get_exposed(self): 
         '''
-        Determines if current agent is exposed based on close contacts 
+        Determines if agent is exposed based on close contacts 
 
         returns self with updated self.infected and self.exposure_time status 
         '''
@@ -83,14 +84,14 @@ class Agent:
         if self.infected == 2:
             return self  
         else: 
-            # Susceptible 
+            # Susceptible or exposed 
             infected_contacts = 0 # counter
             for contact in self.contacts[self.cur_time]: 
                 if contact.infected == 2: 
                     infected_contacts += 1
 
             if infected_contacts > 0:
-                self.infected == 1
+                self.infected == 1 # update status to exposed 
                 self.exposure_time.append(self.cur_time)
             
         return self 
@@ -113,7 +114,7 @@ class Agent:
             return False 
     
         else: 
-            random_num = np.random.rand()
+            random_num = np.random.rand() # uniform draw U(0, 1) 
             p_transmit = 0.3 # CAN CHANGE - perhaps make threshold value, user input
             if random_num < p_transmit: # transmission occurs 
                 self.infected = 2 

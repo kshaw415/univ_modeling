@@ -11,4 +11,4 @@ def parse_data(file):
         lines = file.readlines()
         file.close() 
 
-
+    
