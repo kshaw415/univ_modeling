@@ -21,10 +21,12 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    barrier = Barrier.Barrier(x=-10.0, y=0.0, width=0.1, height=10) # can adjust 
-    barrier2 = Barrier.Barrier(x=10.0,y=0.0, width=0.1, height=10)
-    barrier3 = Barrier.Barrier(x=0, y=10, width=10, height=0.1)
-    barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
+    # barrier = Barrier.Barrier(x=-10.0, y=0.0, width=0.1, height=10) # can adjust 
+    # barrier2 = Barrier.Barrier(x=10.0,y=0.0, width=0.1, height=10)
+    # barrier3 = Barrier.Barrier(x=0, y=10, width=10, height=0.1)
+    # barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
+
+    barrier_new = Barrier.Barrier(A=[0,0], B=[0,2])
        
         # create initial plot 
     trace = go.Scatter(
@@ -33,43 +35,52 @@ if __name__ == "__main__":
         mode='markers', marker=dict(size=10)
     )
 
-    # barrier trace 
-    barrier_trace = go.Scatter(
-        x=[barrier.x, barrier.x + barrier.width, barrier.x + barrier.width, barrier.x, barrier.x],
-        y=[barrier.y, barrier.y, barrier.y + barrier.height, barrier.y + barrier.height, barrier.y],
-        mode='lines',
-        line=dict(color='red', width=2),
-        fill='toself',
-        name='Barrier'
+    barriernew_trace = go.Scatter(
+        x = [barrier_new.A[0], barrier_new.B[0]],
+        y = [barrier_new.A[1], barrier_new.B[1]],
+        mode='lines', 
+        line=dict(color='black', width=1), 
+        fill='toself', 
+        name='Barrier New'
     )
+###
+    # # barrier trace 
+    # barrier_trace = go.Scatter(
+    #     x=[barrier.x, barrier.x + barrier.width, barrier.x + barrier.width, barrier.x, barrier.x],
+    #     y=[barrier.y, barrier.y, barrier.y + barrier.height, barrier.y + barrier.height, barrier.y],
+    #     mode='lines',
+    #     line=dict(color='red', width=2),
+    #     fill='toself',
+    #     name='Barrier'
+    # )
 
-    barrier_trace2 = go.Scatter(
-        x=[barrier2.x, barrier2.x + barrier2.width, barrier2.x + barrier2.width, barrier2.x, barrier2.x],
-        y=[barrier2.y, barrier2.y, barrier2.y + barrier2.height, barrier2.y + barrier2.height, barrier2.y],
-        mode='lines',
-        line=dict(color='blue', width=2),
-        fill='toself',
-        name='Barrier2'
-    )
+    # barrier_trace2 = go.Scatter(
+    #     x=[barrier2.x, barrier2.x + barrier2.width, barrier2.x + barrier2.width, barrier2.x, barrier2.x],
+    #     y=[barrier2.y, barrier2.y, barrier2.y + barrier2.height, barrier2.y + barrier2.height, barrier2.y],
+    #     mode='lines',
+    #     line=dict(color='blue', width=2),
+    #     fill='toself',
+    #     name='Barrier2'
+    # )
 
-    barrier_trace3 = go.Scatter(
-        x=[barrier3.x, barrier3.x + barrier3.width, barrier3.x + barrier3.width, barrier3.x, barrier3.x],
-        y=[barrier3.y, barrier3.y, barrier3.y + barrier3.height, barrier3.y + barrier3.height, barrier3.y],
-        mode='lines',
-        line=dict(color='green', width=2),
-        fill='toself',
-        name='Barrier3'
-    )
+    # barrier_trace3 = go.Scatter(
+    #     x=[barrier3.x, barrier3.x + barrier3.width, barrier3.x + barrier3.width, barrier3.x, barrier3.x],
+    #     y=[barrier3.y, barrier3.y, barrier3.y + barrier3.height, barrier3.y + barrier3.height, barrier3.y],
+    #     mode='lines',
+    #     line=dict(color='green', width=2),
+    #     fill='toself',
+    #     name='Barrier3'
+    # )
 
-    barrier_trace4 = go.Scatter(
-        x=[barrier4.x, barrier4.x + barrier4.width, barrier4.x + barrier4.width, barrier4.x, barrier4.x],
-        y=[barrier4.y, barrier4.y, barrier4.y + barrier4.height, barrier4.y + barrier4.height, barrier4.y],
-        mode='lines',
-        line=dict(color='purple', width=2),
-        fill='toself',
-        name='Barrier4'
-    )
-
+    # barrier_trace4 = go.Scatter(
+    #     x=[barrier4.x, barrier4.x + barrier4.width, barrier4.x + barrier4.width, barrier4.x, barrier4.x],
+    #     y=[barrier4.y, barrier4.y, barrier4.y + barrier4.height, barrier4.y + barrier4.height, barrier4.y],
+    #     mode='lines',
+    #     line=dict(color='purple', width=2),
+    #     fill='toself',
+    #     name='Barrier4'
+    # )
+###
     # layout 
     layout = go.Layout(
         title='Random Walk Animation', 
@@ -83,10 +94,11 @@ if __name__ == "__main__":
         subplot_titles=['Random Walk Animation!'], 
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
-    fig.add_trace(barrier_trace)
-    fig.add_trace(barrier_trace2)
-    fig.add_trace(barrier_trace3)
-    fig.add_trace(barrier_trace4)
+    fig.add_trace(barriernew_trace)
+    # fig.add_trace(barrier_trace)
+    # fig.add_trace(barrier_trace2)
+    # fig.add_trace(barrier_trace3)
+    # fig.add_trace(barrier_trace4)
 
     fig.update_layout(
         xaxis=dict(range=[-20, 20]),  # Adjust the range as needed
@@ -103,7 +115,7 @@ if __name__ == "__main__":
         for i in range(num_agents):
             # update position 
             agent = agents[i]
-            agent_positions[i] = agent.random_walk(barrier=barrier) # this is def sus 
+            agent_positions[i] = agent.random_walk(barrier_new) # this is def sus 
             if i == num_agents - 1: # last agent, this is also awk
                 break 
             else: 
