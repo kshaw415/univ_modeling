@@ -5,6 +5,7 @@ from random import randint
 import math 
 from collections import defaultdict
 from pprint import pprint 
+from Barrier import Barrier
 
 class Agent: 
     '''
@@ -39,14 +40,21 @@ class Agent:
     def __str__(self): 
         return f"{self.id} infected_status: {self.infected}"
     
-    def random_walk(self): 
+    def random_walk(self, barriers): 
+        '''
+        Random walk algorithm. 
+        input: 
+            barriers --> List<Barrier>
+        output: 
+            self.position --> new position coordinates for Agent
+        '''
         step_size = 1; # STEP SIZE, CHANGE IF DESIRED 
-        # check for barrier collision 
+        
         angle = np.random.uniform(0, 2 * np.pi)
         new_x = self.position[0] + step_size * np.cos(angle)
         new_y = self.position[1] + step_size * np.sin(angle)
 
-        # temporary determine out of bounds (not barrier within)
+        # determine out of bounds (not barrier within)
         if new_x > 10: 
             new_x -= 1
         if new_x < -10: 
@@ -56,33 +64,19 @@ class Agent:
         if new_y < -10: 
             new_y += 1
 
+        # determine if new step crosses any barriers 
+        # IF THIS DOESN'T WORK, remove the for loop. 
+        for barrier in barriers: 
+            cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
+            while cross_barrier: 
+                # choose new 
+                angle = np.random.uniform(0, 2 * np.pi)
+                new_x = self.position[0] + step_size * np.cos(angle)
+                new_y = self.position[1] + step_size * np.sin(angle)
+                cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
+            
         self.position = [new_x, new_y] # update Agent location 
         return self.position
-    
-
-    # def random_walk(self, barrier): 
-    #     '''
-    #     update: 
-    #     PROBLEM: what if no barrier! 
-    #     '''
-    #     step_size = 1; # STEP SIZE, CHANGE IF DESIRED 
-    #     # check for barrier collision 
-    #     angle = np.random.uniform(0, 2 * np.pi)
-    #     collision_status = barrier.mindistance(self) 
-    #     while barrier and collision_status: 
-    #         # Reflect the direction of movement upon collision
-    #         # angle = np.random.uniform(0, 2 * np.pi)
-    #         new_x = self.position[0] + step_size * -np.cos(angle)
-    #         self.position[0] = new_x
-    #         new_y = self.position[1] + step_size * np.sin(-angle)
-    #         self.position[1] = new_y 
-    #         collision_status = barrier.mindistance(self)
-
-    #     new_x = self.position[0] + step_size * np.cos(angle)
-    #     new_y = self.position[1] + step_size * np.sin(angle)
-
-    #     self.position = [new_x, new_y] # update Agent location 
-    #     return self.position
     
     def agent_distance(self, agent2, cur_time, threshold): 
         '''

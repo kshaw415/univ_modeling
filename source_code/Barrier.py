@@ -12,6 +12,8 @@ class Barrier:
         Fields: 
         A --> list of x&y coordinates 
         B --> list of x&y coordinates 
+
+        # NOTE: make line vectors in __init__
         '''
         self.A = A
         self.B = B
@@ -76,7 +78,30 @@ class Barrier:
         
         else:
             return False 
+        
+    def det_crossbarrier(self, cur_pos, next_pos): 
+        '''
+        Boolean function that determines if the step location crosses the barrier. 
+        Inputs: 
+            cur_pos --> list, [x,y] coordinates of Agent current position 
+            next_pos --> list, [x,y] coordinates of Agent next proposed position 
 
+        Output: 
+            Boolean --> True if next_pos crosses Barrier, else False
+        '''
+        # Define vectors 
+        v_barrier = (self.B[0] - self.A[0], self.B[1] - self.A[1])
+        v_current = (cur_pos[0] - self.A[0], cur_pos[1] - self.A[1])
+        v_step = (next_pos[0] - self.A[0], next_pos[1] - self.A[1])
+
+        # Calculate cross products
+        cp_current = v_barrier[0] * v_current[1] - v_barrier[1] * v_current[0]
+        cp_next = v_barrier[0] * v_step[1] - v_barrier[1] * v_step[0]
+
+        if (cp_current > 0) == (cp_next > 0): # on same side
+            return False
+        else: # proposed step crosses barrier
+            return True
 
 
 

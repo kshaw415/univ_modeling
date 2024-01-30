@@ -19,4 +19,3 @@ def test_agent_distance():
 
 if __name__ == "__main__": 
     test_agent_distance()
-    
