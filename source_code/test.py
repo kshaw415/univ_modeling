@@ -1,5 +1,5 @@
 import pytest
-import Agent
+import Agent, Barrier
 # from Agent import agent_distance
 # Python File to test class functions 
 
@@ -13,6 +13,9 @@ def test_agent_distance():
     print(agent1.contacts.items())
     assert(len(agent1.contacts[1])) == 1
     assert(len(agent2.contacts[1])) == 1
+
+# def test_barrier_mindistance(): 
+
 
 if __name__ == "__main__": 
     test_agent_distance()

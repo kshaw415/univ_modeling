@@ -26,9 +26,9 @@ if __name__ == "__main__":
     # barrier3 = Barrier.Barrier(x=0, y=10, width=10, height=0.1)
     # barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
 
-    barrier_new = Barrier.Barrier(A=[0,0], B=[0,2])
+    barrier_new = Barrier.Barrier([0,0], [0,2])
        
-        # create initial plot 
+    # create initial plot 
     trace = go.Scatter(
         x = [agent.position[0] for agent in agents], 
         y = [agent.position[1] for agent in agents], 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         subplot_titles=['Random Walk Animation!'], 
                         specs=[[{'type': 'scatter'}]])
     fig.add_trace(trace)
-    fig.add_trace(barriernew_trace)
+    # fig.add_trace(barriernew_trace)
     # fig.add_trace(barrier_trace)
     # fig.add_trace(barrier_trace2)
     # fig.add_trace(barrier_trace3)
@@ -115,19 +115,25 @@ if __name__ == "__main__":
         for i in range(num_agents):
             # update position 
             agent = agents[i]
-            agent_positions[i] = agent.random_walk(barrier_new) # this is def sus 
+            # need to go through barrier LIST (all barriers) 
+            agent_positions[i] = agent.random_walk()#agent.random_walk(barrier_new) # this is def sus 
             if i == num_agents - 1: # last agent, this is also awk
                 break 
             else: 
+                # calling all methods 
                 dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
                 dist_list.append(dist)
+                agent.get_exposed()
+                agent.det_transmission()
+
         # Create a frame for the current step
         frame = go.Frame(data=[
             go.Scatter(
                 x = [agent.position[0] for agent in agents], 
                 y = [agent.position[1] for agent in agents], 
                 mode='markers')],
-                name=f'Frame {step + 1}')
+                # marker={'color': ['red' if agent.infected == 2 else 'yellow' if agent.infected == 1 else 'blue']})],
+                name=f'Frame {step + 1}') 
         
         frames.append(frame)
 
@@ -142,6 +148,7 @@ if __name__ == "__main__":
                                frame=dict(duration=200, redraw=True), 
                                fromcurrent=True)])])])
     
-    # pprint.pprint(agents[i].contacts)
+    for i in agents: 
+        print(str(i))
     fig.show()
     
