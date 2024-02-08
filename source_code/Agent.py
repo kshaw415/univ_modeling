@@ -55,13 +55,13 @@ class Agent:
         new_y = self.position[1] + step_size * np.sin(angle)
 
         # determine out of bounds (not barrier within)
-        if new_x > 10: 
+        if new_x > 15: 
             new_x -= 1
-        if new_x < -10: 
+        if new_x < -15: 
             new_x += 1
-        if new_y > 10: 
+        if new_y > 15: 
             new_y -= 1
-        if new_y < -10: 
+        if new_y < -15: 
             new_y += 1
 
         # determine if new step crosses any barriers 
@@ -143,7 +143,7 @@ class Agent:
     
         else: 
             random_num = np.random.rand() # uniform draw U(0, 1) 
-            p_transmit = 0.1 # CAN CHANGE - perhaps make threshold value, user input
+            p_transmit = 0.03 # CAN CHANGE - perhaps make threshold value, user input
             if random_num < p_transmit: # transmission occurs 
                 self.infected = 2 
         

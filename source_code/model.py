@@ -27,16 +27,14 @@ if __name__ == "__main__":
     # barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
 
     barriers = []
-    barrier_0 = Barrier.Barrier([0,0], [0,5])
-    barrier_1 = Barrier.Barrier([0,0], [5,0])
+    barrier_0 = Barrier.Barrier([0,0], [0,10])
+    barrier_1 = Barrier.Barrier([0,0], [10,0])
+    barrier_2 = Barrier.Barrier([7, 10], [10, 10])
+    barrier_3 = Barrier.Barrier([10, 10], [10, 0])
     barriers.append(barrier_0)
     barriers.append(barrier_1)
-
-
-
-
-
-
+    barriers.append(barrier_2)
+    barriers.append(barrier_3)
 
 
     # create initial plot 
@@ -45,16 +43,6 @@ if __name__ == "__main__":
         y = [agent.position[1] for agent in agents], 
         mode='markers', marker=dict(size=10)
     )
-
-    # barriernew_trace = go.Scatter(
-    #     x = [barrier_0.A[0], barrier_0.B[0]],
-    #     y = [barrier_0.A[1], barrier_0.B[1]],
-    #     mode='lines', 
-    #     line=dict(color='black', width=1), 
-    #     fill='toself', 
-    #     name='Barrier New'
-    # )
-
 
     # layout 
     layout = go.Layout(
@@ -90,9 +78,19 @@ if __name__ == "__main__":
     frames = []
 
     dist_list = []
+
+    # data for graphing/analysis 
+    tot_sus = []
+    tot_exp = []
+    tot_inf = []
+
     # Perform random walk for a certain number of steps
     num_steps = 100
     for step in range(num_steps):
+        num_sus = 0
+        num_exp = 0 
+        num_inf = 0 
+
         for i in range(num_agents):
             # update position 
             agent = agents[i]
@@ -106,6 +104,19 @@ if __name__ == "__main__":
                 dist_list.append(dist)
                 agent.get_exposed()
                 agent.det_transmission()
+            
+            # output data
+            if agent.infected == 0: 
+                num_sus += 1
+            elif agent.infected == 1: 
+                num_exp += 1 
+            elif agent.infected == 2: 
+                num_inf += 1
+            else: 
+                print("oh no they are immune")
+        tot_sus.append(num_sus)
+        tot_exp.append(num_exp)
+        tot_inf.append(num_inf)
 
         # Create a frame for the current step
         frame = go.Frame(data=[
@@ -131,5 +142,57 @@ if __name__ == "__main__":
     
     for i in agents: 
         print(str(i))
+
     fig.show()
-    
+
+    # graphing data
+    x_timestep = [i for i in range(1, num_steps)] 
+
+    traceSus = go.Scatter(
+        x=x_timestep, 
+        y=tot_sus, 
+        mode='lines+markers', 
+        name='Number of Susceptible Agents per Time Step'
+    )
+
+    layoutSus = go.Layout(
+        title='Number of Susceptible Agents over Time', 
+        xaxis=dict(title='Time Steps'), 
+        yaxis=dict(title='Number of Susceptible Agents')
+    )
+
+    # traceExp = go.Scatter(
+    #     x=x_timestep, 
+    #     y=tot_exp, 
+    #     mode='lines+markers', 
+    #     name='Number of Exposed Agents per Time Step'
+    # )
+
+    # traceInf = go.Scatter(
+    #     x=x_timestep,
+    #     y=tot_exp,
+    #     mode='lines+markers',
+    #     name='Number of Infected Agents per Time Step'
+    # )
+
+
+
+    # layoutExp = go.Layout(
+    #     title='Number of Exposed Agents over Time', 
+    #     xaxis=dict(title='Time Steps'), 
+    #     yaxis=dict(title='Number of Exposed Agents')
+    # )
+
+    # layoutInf = go.Layout(
+    #     title='Number of Infected Agents over Time', 
+    #     xaxis=dict(title='Time Steps'), 
+    #     yaxis=dict(title='Number of Infected Agents')
+    # )
+
+    figSus = go.Figure(data=[traceSus], layout=layoutSus)
+    # figExp = go.Figure(data=[traceExp], layout=layoutExp)
+    # figInf = go.Figure(data=[traceInf], layout=layoutInf)
+
+    figSus.show()
+    # figExp.show()
+    # figInf.show()
