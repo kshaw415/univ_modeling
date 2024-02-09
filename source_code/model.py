@@ -8,7 +8,7 @@ import pprint
 
 if __name__ == "__main__": 
     # Number of agents
-    num_agents = 10
+    num_agents = 50
     agents = []
     agent_positions = []
     THRESHOLD = 6
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # Initialize agents with random positions
     for i in range(num_agents): 
         agent_id = i
-        infected_status = np.random.choice([0, 1, 2]) # CAN CHANGE FOR MORE WEIGHTED
+        infected_status = np.random.choice([0, 1, 2]) # CAN CHANGE FOR MORE WEIGHTED/do we want to start with ANY exposed people? 
         agent = Agent.Agent(agent_id, infected_status)
         agents.append(agent)
         agent_positions.append(agent.position)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     tot_inf = []
 
     # Perform random walk for a certain number of steps
-    num_steps = 100
+    num_steps = 1000
     for step in range(num_steps):
         num_sus = 0
         num_exp = 0 
@@ -161,38 +161,37 @@ if __name__ == "__main__":
         yaxis=dict(title='Number of Susceptible Agents')
     )
 
-    # traceExp = go.Scatter(
-    #     x=x_timestep, 
-    #     y=tot_exp, 
-    #     mode='lines+markers', 
-    #     name='Number of Exposed Agents per Time Step'
-    # )
+    traceExp = go.Scatter(
+        x=x_timestep, 
+        y=tot_exp, 
+        mode='lines+markers', 
+        name='Number of Exposed Agents per Time Step'
+    )
 
-    # traceInf = go.Scatter(
-    #     x=x_timestep,
-    #     y=tot_exp,
-    #     mode='lines+markers',
-    #     name='Number of Infected Agents per Time Step'
-    # )
+    traceInf = go.Scatter(
+        x=x_timestep,
+        y=tot_inf,
+        mode='lines+markers',
+        name='Number of Infected Agents per Time Step'
+    )
 
 
+    layoutExp = go.Layout(
+        title='Number of Exposed Agents over Time', 
+        xaxis=dict(title='Time Steps'), 
+        yaxis=dict(title='Number of Exposed Agents')
+    )
 
-    # layoutExp = go.Layout(
-    #     title='Number of Exposed Agents over Time', 
-    #     xaxis=dict(title='Time Steps'), 
-    #     yaxis=dict(title='Number of Exposed Agents')
-    # )
-
-    # layoutInf = go.Layout(
-    #     title='Number of Infected Agents over Time', 
-    #     xaxis=dict(title='Time Steps'), 
-    #     yaxis=dict(title='Number of Infected Agents')
-    # )
+    layoutInf = go.Layout(
+        title='Number of Infected Agents over Time', 
+        xaxis=dict(title='Time Steps'), 
+        yaxis=dict(title='Number of Infected Agents')
+    )
 
     figSus = go.Figure(data=[traceSus], layout=layoutSus)
-    # figExp = go.Figure(data=[traceExp], layout=layoutExp)
-    # figInf = go.Figure(data=[traceInf], layout=layoutInf)
+    figExp = go.Figure(data=[traceExp], layout=layoutExp)
+    figInf = go.Figure(data=[traceInf], layout=layoutInf)
 
     figSus.show()
-    # figExp.show()
-    # figInf.show()
+    figExp.show()
+    figInf.show()
