@@ -103,7 +103,8 @@ if __name__ == "__main__":
                 dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
                 dist_list.append(dist)
                 agent.get_exposed()
-                agent.det_transmission()
+                agent.get_infected()
+                # TODO: transmission()
             
             # output data
             if agent.infected == 0: 

@@ -31,9 +31,7 @@ class Agent:
         self.contacts = defaultdict(list) #dict([])
         x = randint(-10,10) # CAN CHANGE
         y = randint(-10,10) # CAN CHANGE
-        # self.position = np.random.rand(1, 2) # x, y location 
         self.position = [x, y]
-        # self.position = self.position.tolist()[0]
         self.cur_time = 0
         self.exposure_time = []
 
@@ -89,8 +87,8 @@ class Agent:
         if distance <= threshold: 
             # update contact dict
             if cur_time in self.contacts: 
-                self.contacts[cur_time].append([agent2, distance]) # MIGHT BECOME A SPACE ISSUE
-                agent2.contacts[cur_time].append([self, distance]) # MIGHT BECOME A SPACE ISSUE 
+                self.contacts[cur_time].append([agent2, distance]) 
+                agent2.contacts[cur_time].append([self, distance]) 
             else: 
                 self.contacts[cur_time] = [[agent2, distance]]
                 agent2.contacts[cur_time] = [[self, distance]]
@@ -103,6 +101,8 @@ class Agent:
         Determines if agent is exposed based on close contacts 
 
         returns self with updated self.infected and self.exposure_time status 
+
+        # TODO: implement a pmf to see if they infect another person 
         '''
         # if agent itself is already infected or 
         if self.infected == 2:
@@ -124,14 +124,21 @@ class Agent:
             
         return self  
     
-    def det_transmission(self): 
+    def get_infected(self): 
         '''
+        OLD - DOES NOT DO WHAT WE WANT IT TO DO 
+        
+        # TODO: rename to get_infected, this is a natural history step 
+            that should take in a pmf of exposure time to go from being exposed
+            to infected
+
+
         Determines if an agent that is exposed becomes infected. 
         Updates Agent's infected status
 
         Output: Boolean
             True --> if agent is currently infected
-            False --> if agent is not infected (can still be exposed) 
+            False --> if agent is not infected (exposed OR susceptible) 
         '''
         # agent is already infected - returns True for infected 
         if self.infected == 2: 
@@ -148,6 +155,4 @@ class Agent:
                 self.infected = 2 
         
         return True if self.infected == 2 else False 
-
-
 
