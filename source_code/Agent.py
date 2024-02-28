@@ -94,7 +94,7 @@ class Agent:
                 agent2.contacts[cur_time] = [[self, distance]]
             self.cur_time = cur_time # update time 
 
-        return distance
+        return self
     
     def get_exposed(self): 
         '''
