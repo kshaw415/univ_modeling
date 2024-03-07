@@ -29,6 +29,16 @@ from model import Model
 
 
 ##########
+
+### HELPER FUNCTIONS
+def remove_from_pop(agent): 
+    """
+    Agent is infected and symptomatic. They are removed from population
+    """
+    return True
+
+
+
 if __name__ == "__main__": 
     # Number of agents
     num_agents = 50
@@ -39,20 +49,16 @@ if __name__ == "__main__":
     # Initialize agents with random positions
     for i in range(num_agents): 
         agent_id = i
-        infected_status = np.random.choice([0, 1, 2]) # CAN CHANGE FOR MORE WEIGHTED/do we want to start with ANY exposed people? 
+        infected_status = np.random.choice([0, 2]) # CAN CHANGE FOR MORE WEIGHTED/do we want to start with ANY exposed people? 
+        print(infected_status)
         agent = Agent.Agent(agent_id, infected_status)
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    # barrier = Barrier.Barrier(x=-10.0, y=0.0, width=0.1, height=10) # can adjust 
-    # barrier2 = Barrier.Barrier(x=10.0,y=0.0, width=0.1, height=10)
-    # barrier3 = Barrier.Barrier(x=0, y=10, width=10, height=0.1)
-    # barrier4 = Barrier.Barrier(x=0, y=-10, width=10, height=0)
-
     barriers = []
     barrier_0 = Barrier.Barrier([0,0], [0,10])
     barrier_1 = Barrier.Barrier([0,0], [10,0])
-    barrier_2 = Barrier.Barrier([7, 10], [10, 10])
+    barrier_2 = Barrier.Barrier([0, 10], [10, 10])
     barrier_3 = Barrier.Barrier([10, 10], [10, 0])
     barriers.append(barrier_0)
     barriers.append(barrier_1)
@@ -123,7 +129,7 @@ if __name__ == "__main__":
                 break 
             else: 
                 # calling all methods 
-                dist = agent.agent_distance(agents[i + 1], step, THRESHOLD) 
+                dist = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
                 dist_list.append(dist)
                 agent.get_exposed()
                 agent.get_infected()
@@ -218,3 +224,4 @@ figInf = go.Figure(data=[traceInf], layout=layoutInf)
 figSus.show()
 figExp.show()
 figInf.show()
+
