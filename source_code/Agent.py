@@ -153,8 +153,11 @@ class Agent:
                 new_x = self.position[0] + step_size * np.cos(angle)
                 new_y = self.position[1] + step_size * np.sin(angle)
                 cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
-            
+                        
+        old = self.position
         self.position = [new_x, new_y] # update Agent location 
+        # print(math.dist(old, self.position))
+
         return self.position
     
 
@@ -240,36 +243,28 @@ class Agent:
     
         else: 
             random_num = np.random.rand() # uniform draw U(0, 1) 
-            p_transmit = 0.01 # CAN CHANGE - perhaps make threshold value, user input
+            p_transmit = 0.03 # CAN CHANGE - perhaps make threshold value, user input
             if random_num < p_transmit: # transmission occurs 
                 self.infected = 2 
                 self.infected_time += 1
         
         return True if self.infected == 2 else False 
 
-    def get_symptoms(self): 
+    def get_symptoms(self, symptom_threshold): 
         """
-        Determines if an agent that is infected becomes symptomatic 
+        Determines if an agent that is infected becomes symptomatic. 
+        # TODO: parameterize (user input) this value 
+        """
+        # TODO: Simple binomial draw for person is symptomatic or asymptomatic 
+            # X days after infection (lag --> parameter) 
         
-        import numpy as np
-
-        # Define the mean parameter
-        mu = 3
-
-        # Generate random numbers following the Poisson distribution
-        random_numbers = np.random.poisson(mu, size=10)
-
-
-        # Parameters of the Poisson distribution
-        mu = 3
-
-        # Number of events to calculate the PMF for
-        k_values = np.arange(0, 10)  # For example, calculate PMF for events from 0 to 9
-
-        # Calculate the PMF
-        pmf_values = np.poisson.pmf(k_values, mu)
-        """
-        return True
+        # Identify what day since exposure 
+        exposure_prob = symptom_threshold # this will be a FUNCTION
+        random_num = np.random.rand()
+        if random_num < exposure_prob: 
+            self.symptom_time += 1 # start symptom counter 
+        
+        return self # yeah idk 
 
 
     def recover(self): 

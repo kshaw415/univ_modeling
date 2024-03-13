@@ -50,7 +50,7 @@ if __name__ == "__main__":
     for i in range(num_agents): 
         agent_id = i
         infected_status = np.random.choice([0, 2]) # CAN CHANGE FOR MORE WEIGHTED/do we want to start with ANY exposed people? 
-        print(infected_status)
+        # print(infected_status)
         agent = Agent.Agent(agent_id, infected_status)
         agents.append(agent)
         agent_positions.append(agent.position)
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     tot_inf = []
 
     # Perform random walk for a certain number of steps
-    num_steps = 1000
+    num_steps = 28800 #28800 is 1 day (8 hours) 
     for step in range(num_steps):
         num_sus = 0
         num_exp = 0 
@@ -169,8 +169,8 @@ if __name__ == "__main__":
                                frame=dict(duration=200, redraw=True), 
                                fromcurrent=True)])])])
     
-    for i in agents: 
-        print(str(i))
+    # for i in agents: 
+        # print(str(i))
 
     fig.show()
 
