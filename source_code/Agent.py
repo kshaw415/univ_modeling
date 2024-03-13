@@ -108,8 +108,8 @@ class Agent:
         self.id = id
         self.infected = infected
         self.contacts = defaultdict(list) #dict([])
-        x = randint(-10,10) # CAN CHANGE
-        y = randint(-10,10) # CAN CHANGE
+        x = randint(-14,14) # CAN CHANGE # TODO: Parameter
+        y = randint(-12,12) # CAN CHANGE # TODO: Parameter
         self.position = [x, y]
         self.cur_time = 0
         self.exposure_time = []
@@ -138,9 +138,9 @@ class Agent:
             new_x -= 1
         if new_x < -15: 
             new_x += 1
-        if new_y > 15: 
+        if new_y > 13: 
             new_y -= 1
-        if new_y < -15: 
+        if new_y < -13: 
             new_y += 1
 
         # determine if new step crosses any barriers 
@@ -200,12 +200,12 @@ class Agent:
         '''
         # if agent itself is already infected or 
         if self.infected == 2:
-            return self  
+            return False  
         else: 
             # Susceptible or exposed 
             infected_contacts = 0 # counter
             if len(self.contacts) == 0: 
-                return self
+                return False
             else:
                 close_contacts = self.contacts[self.cur_time]
                 for contact in close_contacts: 
@@ -216,7 +216,7 @@ class Agent:
                     self.infected = 1 # update status to exposed 
                     self.exposure_time.append(self.cur_time)
             
-        return self  
+        return True  
     
     def get_infected(self): 
         '''        
@@ -229,7 +229,7 @@ class Agent:
         '''
         # agent is already infected - returns True for infected 
         if self.infected == 2: 
-            self.infected_time += 1 
+            # self.infected_time += 1 
             return True 
         
         # no exposure 
@@ -246,7 +246,7 @@ class Agent:
             p_transmit = 0.03 # CAN CHANGE - perhaps make threshold value, user input
             if random_num < p_transmit: # transmission occurs 
                 self.infected = 2 
-                self.infected_time += 1
+                # self.infected_time += 1
         
         return True if self.infected == 2 else False 
 
@@ -262,9 +262,10 @@ class Agent:
         exposure_prob = symptom_threshold # this will be a FUNCTION
         random_num = np.random.rand()
         if random_num < exposure_prob: 
-            self.symptom_time += 1 # start symptom counter 
+            # self.symptom_time += 1 # start symptom counter 
         
-        return self # yeah idk 
+            return True 
+        return False 
 
 
     def recover(self): 
@@ -272,5 +273,10 @@ class Agent:
         Recover based on time infected 
         
         """
-        if self.symptom_time == 7:  # CAN CHANGE, after 7 time steps they are infected
-            self.infected = 0 
+        self.infected = 0 
+        self.symptom_time = 0
+        self.contacts = defaultdict(list)
+        self.exposure_time = []
+        self.infected_time = 0
+        self.symptom_time = 0 
+        return self 

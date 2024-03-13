@@ -7,6 +7,8 @@ import Agent
 import Barrier
 import pprint
 from model import Model 
+import params
+
 # from Agent import agent_distance
 # Python File to test class functions 
 
@@ -33,8 +35,9 @@ from model import Model
 ### HELPER FUNCTIONS
 def remove_from_pop(agent): 
     """
-    Agent is infected and symptomatic. They are removed from population
+    Agent is infected and symptomatic. They are removed from population and return after 5 days (14400 sec) 
     """
+
     return True
 
 
@@ -45,6 +48,7 @@ if __name__ == "__main__":
     agents = []
     agent_positions = []
     THRESHOLD = 6
+    symptom_THRESHOLD = 0.6 # TODO: this is COMPLETELY arbitrary 
 
     # Initialize agents with random positions
     for i in range(num_agents): 
@@ -55,15 +59,17 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    barriers = []
-    barrier_0 = Barrier.Barrier([0,0], [0,10])
-    barrier_1 = Barrier.Barrier([0,0], [10,0])
-    barrier_2 = Barrier.Barrier([0, 10], [10, 10])
-    barrier_3 = Barrier.Barrier([10, 10], [10, 0])
-    barriers.append(barrier_0)
-    barriers.append(barrier_1)
-    barriers.append(barrier_2)
-    barriers.append(barrier_3)
+    barriers = params.barrier_data("params - RoomsClosed.csv")
+    
+    # barriers = []
+    # barrier_0 = Barrier.Barrier([0,0], [0,10])
+    # barrier_1 = Barrier.Barrier([0,0], [10,0])
+    # barrier_2 = Barrier.Barrier([0, 10], [10, 10])
+    # barrier_3 = Barrier.Barrier([10, 10], [10, 0])
+    # barriers.append(barrier_0)
+    # barriers.append(barrier_1)
+    # barriers.append(barrier_2)
+    # barriers.append(barrier_3)
 
 
     # create initial plot 
@@ -114,7 +120,7 @@ if __name__ == "__main__":
     tot_inf = []
 
     # Perform random walk for a certain number of steps
-    num_steps = 28800 #28800 is 1 day (8 hours) 
+    num_steps = 1000 #28800 is 1 day (8 hours) 
     for step in range(num_steps):
         num_sus = 0
         num_exp = 0 
@@ -131,9 +137,16 @@ if __name__ == "__main__":
                 # calling all methods 
                 dist = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
                 dist_list.append(dist)
-                agent.get_exposed()
-                agent.get_infected()
-                # TODO: transmission()
+                if agent.get_exposed(): # if agent gets exposed
+                    if len(agent.exposure_time) > 86400: # if agent exposed for 3 days...
+                        agent.recover() # be susceptible again
+                if agent.get_infected(): # if agent is infected
+                    agent.infected_time += 1
+                    if agent.get_symptoms(symptom_THRESHOLD): 
+                        agent.symptom_time += 1
+                    if agent.symptom_time >= 1000: # symptoms for 5 days
+                        agent.recover()
+                
             
             # output data
             if agent.infected == 0: 
@@ -204,7 +217,6 @@ traceInf = go.Scatter(
     name='Number of Infected Agents per Time Step'
 )
 
-
 layoutExp = go.Layout(
     title='Number of Exposed Agents over Time', 
     xaxis=dict(title='Time Steps'), 
@@ -220,6 +232,10 @@ layoutInf = go.Layout(
 figSus = go.Figure(data=[traceSus], layout=layoutSus)
 figExp = go.Figure(data=[traceExp], layout=layoutExp)
 figInf = go.Figure(data=[traceInf], layout=layoutInf)
+
+figSus.update_layout(yaxis_range=[0, num_agents])
+figExp.update_layout(yaxis_range=[0, num_agents])
+figInf.update_layout(yaxis_range=[0, num_agents])
 
 figSus.show()
 figExp.show()
