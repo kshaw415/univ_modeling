@@ -9,35 +9,12 @@ import pprint
 from model import Model 
 import params
 
-# from Agent import agent_distance
-# Python File to test class functions 
-
-# agent1 = Agent.Agent(0,0)
-# agent2 = Agent.Agent(1, 0)
-# agent3 = Agent.Agent(2, 1)
-
-# def test_agent_distance():
-#     THRESHOLD = 10000 # can change
-#     contacts = Agent.Agent.agent_distance(agent1, agent2, 1, 10000)
-#     print(agent1.contacts.items())
-#     assert(len(agent1.contacts[1])) == 1
-#     assert(len(agent2.contacts[1])) == 1
-
-# # def test_barrier_mindistance(): 
-
-
-# if __name__ == "__main__": 
-#     test_agent_distance()
-
-
-##########
-
 ### HELPER FUNCTIONS
-def remove_from_pop(agent): 
+def remove_from_pop(agent, agents): 
     """
     Agent is infected and symptomatic. They are removed from population and return after 5 days (14400 sec) 
     """
-
+    
     return True
 
 
@@ -59,18 +36,7 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    barriers = params.barrier_data("params - RoomsClosed.csv")
-    
-    # barriers = []
-    # barrier_0 = Barrier.Barrier([0,0], [0,10])
-    # barrier_1 = Barrier.Barrier([0,0], [10,0])
-    # barrier_2 = Barrier.Barrier([0, 10], [10, 10])
-    # barrier_3 = Barrier.Barrier([10, 10], [10, 0])
-    # barriers.append(barrier_0)
-    # barriers.append(barrier_1)
-    # barriers.append(barrier_2)
-    # barriers.append(barrier_3)
-
+    barriers = params.barrier_data("params - RoomsOpen.csv")
 
     # create initial plot 
     trace = go.Scatter(
@@ -144,7 +110,7 @@ if __name__ == "__main__":
                     agent.infected_time += 1
                     if agent.get_symptoms(symptom_THRESHOLD): 
                         agent.symptom_time += 1
-                    if agent.symptom_time >= 1000: # symptoms for 5 days
+                    if agent.symptom_time >= 1000: # symptoms 
                         agent.recover()
                 
             

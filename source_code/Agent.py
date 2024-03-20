@@ -116,6 +116,10 @@ class Agent:
         self.infected_time = 0
         self.symptom_time = 0 
 
+        # intervention
+        self.masking = False # TODO: Parameter
+        
+
     def __str__(self): 
         return f"{self.id} infected_status: {self.infected}"
     
@@ -145,6 +149,7 @@ class Agent:
 
         # determine if new step crosses any barriers 
         # IF THIS DOESN'T WORK, remove the for loop. 
+        # TODO: allows for barrier crossing if passes first barrier, but then chooses new one. 
         for barrier in barriers: 
             cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
             while cross_barrier: 
@@ -164,11 +169,10 @@ class Agent:
     def agent_distance(self, agent2, cur_time, threshold, barriers): 
         '''
         Calculates Euclidean distance from another agent using distance formula
-        
-        update: need to also consider barrier locations 
         '''
         
         distance = math.dist(self.position, agent2.position)
+
         # determine if we identify as a contact 
         if distance <= threshold: 
             # determine if barrier in between them (thus, no actual contact)
@@ -202,19 +206,32 @@ class Agent:
         if self.infected == 2:
             return False  
         else: 
-            # Susceptible or exposed 
-            infected_contacts = 0 # counter
-            if len(self.contacts) == 0: 
-                return False
-            else:
+            if self.masking: 
+                # Masking 
                 close_contacts = self.contacts[self.cur_time]
                 for contact in close_contacts: 
-                    if contact[0].infected == 2: 
-                        infected_contacts += 1
+                    # if contact was masked 
+                    if contact.masking: 
+                        # determine exposure based on time
+                        pass
+                    else: 
+                        if contact[0].infected == 2: 
+                            infected_contacts += 1
+            
+            else: 
+                # Susceptible or exposed 
+                infected_contacts = 0 # counter
+                if len(self.contacts) == 0: 
+                    return False
+                else:
+                    close_contacts = self.contacts[self.cur_time]
+                    for contact in close_contacts: 
+                        if contact[0].infected == 2: 
+                            infected_contacts += 1
 
-                if infected_contacts > 0:
-                    self.infected = 1 # update status to exposed 
-                    self.exposure_time.append(self.cur_time)
+                    if infected_contacts > 0:
+                        self.infected = 1 # update status to exposed 
+                        self.exposure_time.append(self.cur_time)
             
         return True  
     
@@ -227,6 +244,23 @@ class Agent:
             True --> if agent is currently infected
             False --> if agent is not infected (exposed OR susceptible) 
         '''
+        # IDENTIFYING INTERVENTION VARIABLES
+        me_i = 0.01 #TODO: Parameterize
+        me_j = 0.01 #TODO: Parameterize
+        b0 = 1 #TODO: Parameterize
+        b1 = 1 #TODO: Parameterize
+        b2 = 1 #TODO: Parameterize
+        b3 = 1 #TODO: Parameterize 
+
+        # Confirm this is what math works cuz the logit thing is not logiting for me 
+        def logp(me_i, me_j): 
+            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j
+
+        output = logp(me_i, me_j) 
+
+        p = 1 / (1 + math.exp(-(b0 + b1 + b2 + b3)))
+        p_transmit = np.random.binomial(1, p, size=1) 
+
         # agent is already infected - returns True for infected 
         if self.infected == 2: 
             # self.infected_time += 1 
@@ -237,7 +271,7 @@ class Agent:
             return False 
         
         elif len(self.exposure_time) > 0: 
-            if self.exposure_time[-1] > 200: # after 200 time steps, no longer exposed. 
+            if self.exposure_time[-1] > 200: # after 200 time steps, no longer exposed. # TODO: use paramter
                 self.exposure_time = []
                 self.infected == 0
     
@@ -249,6 +283,11 @@ class Agent:
                 # self.infected_time += 1
         
         return True if self.infected == 2 else False 
+    
+    # def mask_get_infected(self, me_i, me_j): 
+    #     """
+    #     Calculates probability of infection knowing there is 
+    #     """
 
     def get_symptoms(self, symptom_threshold): 
         """

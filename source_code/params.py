@@ -52,10 +52,10 @@ def parse_data(file):
     
     return grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, Asympt_ProbInfect, Sympt_ProbInfect
 
-if __name__ == "__main__": 
-    barrier_path = "params2 - 10x10.csv"
-    data_path = ""
-    barriers = barrier_data(barrier_path)
-    grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, \
-        Asympt_ProbInfect, Sympt_ProbInfect = parse_data(data_path)
+# if __name__ == "__main__": 
+#     barrier_path = "params2 - 10x10.csv"
+#     data_path = ""
+#     barriers = barrier_data(barrier_path)
+#     grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, \
+#         Asympt_ProbInfect, Sympt_ProbInfect = parse_data(data_path)
     
