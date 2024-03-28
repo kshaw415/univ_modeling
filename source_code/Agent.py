@@ -234,7 +234,7 @@ class Agent:
                     self.exposure_time.append(self.cur_time)
 
                 for id, exposure_time in self.contact_exposure.items(): 
-                    if exposure_time > 900: 
+                    if exposure_time > 900: # 900
                         self.infected = 1 # become exposed 
                         return True
             
@@ -253,8 +253,8 @@ class Agent:
             TODO: confirm how to calculate b0 and b4
         '''
         # IDENTIFYING INTERVENTION VARIABLES
-        me_i = 0.01 #TODO: Parameterize
-        me_j = 0.01 #TODO: Parameterize
+        me_i = 0.045 #TODO: Parameterize
+        me_j = 0.078 #TODO: Parameterize
         b0 = 1 #TODO: Identify
         b1 = 0 #TODO: Parameterize - 0 is base case 
         b2 = 0 #TODO: Parameterize
@@ -282,13 +282,13 @@ class Agent:
 
                 p = 1 / (1 + math.exp(-output)) 
                 infection_event = np.random.binomial(1, p, size=1) 
+                print(p)
                 if infection_event == 1: 
                     self.infected = 2
                     return True
             
             return False 
         
-
 
     def get_symptoms(self, symptom_threshold): 
         """
@@ -299,7 +299,7 @@ class Agent:
             # X days after infection (lag --> parameter) 
         
         # Identify what day since exposure 
-        exposure_prob = symptom_threshold # this will be a FUNCTION
+        exposure_prob = symptom_threshold # this will be a ???
         random_num = np.random.rand()
         if random_num < exposure_prob: 
             # self.symptom_time += 1 # start symptom counter 
@@ -324,7 +324,7 @@ class Agent:
 
 
 '''
-Funciton takes input on probability scale 
+Function takes input on probability scale 
 - the equations constrain always on level of probability (can't get p > 1)
 - #TODO: come up with a vector of reasonable probabilities for the per second 
          

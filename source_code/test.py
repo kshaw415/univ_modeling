@@ -101,8 +101,8 @@ if __name__ == "__main__":
                 break 
             else: 
                 # Determine close contacts 
-                agent = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
-
+                # agent = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
+                agent = agent.agent_distance(agents, step, THRESHOLD, barriers) 
                 # Determine if an agent is exposed to an infected agent 
                 if agent.get_exposed(): 
                     # Check if thye have been exposed for max number of time 

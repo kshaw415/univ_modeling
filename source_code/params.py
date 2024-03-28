@@ -32,7 +32,7 @@ def parse_data(file):
     '''
     with open(file, 'r') as file: 
         lines = csv.reader(file)
-        next(lines, None) 
+        next(lines, None) # header 
         for line in lines: 
             # Grid Dimensions
             min_x = float(line[0])
@@ -47,17 +47,23 @@ def parse_data(file):
             Sympt_ProbInfect = float(line[7])
             me_i = float(line[8])
             me_j = float(line[9])
+            b0 = float(line[10])
+            b1 = float(line[11])
+            b2 = float(line[12])
+            b3 = float(line[13])
+            b4 = float(line[14])
 
             # Model Running Inputs
-            num_agents = float(line[10])
-            num_steps = float(line[11])
+            num_agents = float(line[15])
+            num_steps = float(line[16])
 
+            # extra stuff i keep forgetting
+            symptom_threshold = float(line[17]) # is this a pmf tho. 
 
-        
         grid_dims = [min_x, max_x, min_y, max_y]
         file.close()
     
-    return grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, Asympt_ProbInfect, Sympt_ProbInfect
+    return grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, Asympt_ProbInfect, Sympt_ProbInfect, me_i, me_j, b0, b1, b2, b3, b4, num_agents, num_steps
 
 # if __name__ == "__main__": 
 #     barrier_path = "params2 - 10x10.csv"
