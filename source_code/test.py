@@ -14,8 +14,10 @@ def remove_from_pop(agent, agents):
     """
     Agent is infected and symptomatic. They are removed from population and return after 5 days (14400 sec) 
     """
+    if agent.infected_time > 14400: 
+        agents.remove(agent)
     
-    return True
+    return agents
 
 
 
@@ -31,7 +33,6 @@ if __name__ == "__main__":
     for i in range(num_agents): 
         agent_id = i
         infected_status = np.random.choice([0, 2]) # CAN CHANGE FOR MORE WEIGHTED/do we want to start with ANY exposed people? 
-        # print(infected_status)
         agent = Agent.Agent(agent_id, infected_status)
         agents.append(agent)
         agent_positions.append(agent.position)
@@ -78,8 +79,6 @@ if __name__ == "__main__":
     # Frames for animation
     frames = []
 
-    dist_list = []
-
     # data for graphing/analysis 
     tot_sus = []
     tot_exp = []
@@ -92,26 +91,35 @@ if __name__ == "__main__":
         num_exp = 0 
         num_inf = 0 
 
-        for i in range(num_agents):
-            # update position 
+        for i in range(len(agents)):
+            # identify current agent working on 
             agent = agents[i]
-            # need to go through barrier LIST (all barriers) 
+
+            # Take random step forward 
             agent_positions[i] = agent.random_walk(barriers)
-            if i == num_agents - 1: # last agent, this is also awk
+            if i == len(agents) - 1: # last agent
                 break 
             else: 
-                # calling all methods 
-                dist = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
-                dist_list.append(dist)
-                if agent.get_exposed(): # if agent gets exposed
-                    if len(agent.exposure_time) > 86400: # if agent exposed for 3 days...
-                        agent.recover() # be susceptible again
-                if agent.get_infected(): # if agent is infected
+                # Determine close contacts 
+                agent = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
+
+                # Determine if an agent is exposed to an infected agent 
+                if agent.get_exposed(): 
+                    # Check if thye have been exposed for max number of time 
+                    for id, exposure_duration in agent.contact_exposure.items(): 
+                        if exposure_duration > 86400: # exposed for 3 days (8 hour days)
+                            agent = agent.recover() 
+
+                # Determine if an agent becomes infected 
+                if agent.get_infected(): 
                     agent.infected_time += 1
                     if agent.get_symptoms(symptom_THRESHOLD): 
                         agent.symptom_time += 1
                     if agent.symptom_time >= 1000: # symptoms 
                         agent.recover()
+
+                # remove infected people from the population 
+                agents = remove_from_pop(agent, agents)
                 
             
             # output data
@@ -122,7 +130,8 @@ if __name__ == "__main__":
             elif agent.infected == 2: 
                 num_inf += 1
             else: 
-                print("oh no they are immune")
+                print("curious this should never happen")
+
         tot_sus.append(num_sus)
         tot_exp.append(num_exp)
         tot_inf.append(num_inf)
@@ -147,13 +156,11 @@ if __name__ == "__main__":
                            method='animate', args=[None, dict(
                                frame=dict(duration=200, redraw=True), 
                                fromcurrent=True)])])])
-    
-    # for i in agents: 
-        # print(str(i))
 
     fig.show()
 
-    # graphing data
+
+# graphing data
 x_timestep = [i for i in range(1, num_steps)] 
 
 traceSus = go.Scatter(

@@ -45,6 +45,13 @@ def parse_data(file):
             PROB_TRANSMISSION = float(line[5])
             Asympt_ProbInfect = float(line[6])
             Sympt_ProbInfect = float(line[7])
+            me_i = float(line[8])
+            me_j = float(line[9])
+
+            # Model Running Inputs
+            num_agents = float(line[10])
+            num_steps = float(line[11])
+
 
         
         grid_dims = [min_x, max_x, min_y, max_y]

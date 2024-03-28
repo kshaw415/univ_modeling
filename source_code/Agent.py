@@ -108,6 +108,7 @@ class Agent:
         self.id = id
         self.infected = infected
         self.contacts = defaultdict(list) #dict([])
+        self.contact_exposure = dict() # {contact.id, exposure_duration}
         x = randint(-14,14) # CAN CHANGE # TODO: Parameter
         y = randint(-12,12) # CAN CHANGE # TODO: Parameter
         self.position = [x, y]
@@ -159,38 +160,48 @@ class Agent:
                 new_y = self.position[1] + step_size * np.sin(angle)
                 cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
                         
-        old = self.position
         self.position = [new_x, new_y] # update Agent location 
-        # print(math.dist(old, self.position))
 
         return self.position
     
 
-    def agent_distance(self, agent2, cur_time, threshold, barriers): 
+    def agent_distance(self, agents, cur_time, threshold, barriers): 
         '''
         Calculates Euclidean distance from another agent using distance formula
         '''
         
-        distance = math.dist(self.position, agent2.position)
+        for agent2 in agents: 
 
-        # determine if we identify as a contact 
-        if distance <= threshold: 
-            # determine if barrier in between them (thus, no actual contact)
-            for barrier in barriers: 
-                p1 = self.position
-                q1 = agent2.position
-                p2 = barrier.A
-                q2 = barrier.B
-                if doIntersect(p1, q1, p2, q2): 
-                    break 
-            # No barriers intersect - can update contact dict     
-            if cur_time in self.contacts: 
-                self.contacts[cur_time].append([agent2, distance]) 
-                agent2.contacts[cur_time].append([self, distance]) 
-            else: 
-                self.contacts[cur_time] = [[agent2, distance]]
-                agent2.contacts[cur_time] = [[self, distance]]
-            self.cur_time = cur_time # update time 
+            distance = math.dist(self.position, agent2.position)
+
+            # determine if we identify as a contact 
+            if distance <= threshold: 
+                # determine if barrier in between them (thus, no actual contact)
+                for barrier in barriers: 
+                    p1 = self.position
+                    q1 = agent2.position
+                    p2 = barrier.A
+                    q2 = barrier.B
+                    if doIntersect(p1, q1, p2, q2): 
+                        break 
+                # No barriers intersect - can update contact dict     
+                if cur_time in self.contacts: 
+                    self.contacts[cur_time].append([agent2, distance]) 
+                    agent2.contacts[cur_time].append([self, distance]) 
+                
+                else: 
+                    self.contacts[cur_time] = [[agent2, distance]]
+                    agent2.contacts[cur_time] = [[self, distance]]
+
+                # if other agent is infected: updating the contact_exposure dict {"agent id": int(duration of exposure)}
+                if agent2.infected == 2: 
+                    if agent2.id in self.contact_exposure: 
+                        self.contact_exposure[agent2.id] += 1
+                    else: 
+                        self.contact_exposure[agent2.id] = 1
+                
+                self.cur_time = cur_time # update time 
+
 
         return self
     
@@ -199,41 +210,35 @@ class Agent:
         Determines if agent is exposed based on close contacts 
 
         returns self with updated self.infected and self.exposure_time status 
-
-        # TODO: implement a pmf to see if they infect another person 
         '''
         # if agent itself is already infected or 
         if self.infected == 2:
             return False  
+        
         else: 
-            if self.masking: 
-                # Masking 
+            # Susceptible or exposed 
+            infected_contacts = 0 # counter
+
+            # Scenario 1: No close contacts 
+            if len(self.contacts) == 0: 
+                return False
+            
+            else:
                 close_contacts = self.contacts[self.cur_time]
                 for contact in close_contacts: 
-                    # if contact was masked 
-                    if contact.masking: 
-                        # determine exposure based on time
-                        pass
-                    else: 
-                        if contact[0].infected == 2: 
-                            infected_contacts += 1
-            
-            else: 
-                # Susceptible or exposed 
-                infected_contacts = 0 # counter
-                if len(self.contacts) == 0: 
-                    return False
-                else:
-                    close_contacts = self.contacts[self.cur_time]
-                    for contact in close_contacts: 
-                        if contact[0].infected == 2: 
-                            infected_contacts += 1
+                    if contact[0].infected == 2: 
+                        infected_contacts += 1
 
-                    if infected_contacts > 0:
-                        self.infected = 1 # update status to exposed 
-                        self.exposure_time.append(self.cur_time)
+                if infected_contacts > 0:
+                    self.infected = 1 # update status to exposed 
+                    self.exposure_time.append(self.cur_time)
+
+                for id, exposure_time in self.contact_exposure.items(): 
+                    if exposure_time > 900: 
+                        self.infected = 1 # become exposed 
+                        return True
             
-        return True  
+        return False  
     
     def get_infected(self): 
         '''        
@@ -245,51 +250,50 @@ class Agent:
             False --> if agent is not infected (exposed OR susceptible) 
 
 
-            TODO: for loop for each infected contacts YUH
+            TODO: confirm how to calculate b0 and b4
         '''
         # IDENTIFYING INTERVENTION VARIABLES
         me_i = 0.01 #TODO: Parameterize
         me_j = 0.01 #TODO: Parameterize
-        b0 = 1 #TODO: Parameterize
-        b1 = 1 #TODO: Parameterize
-        b2 = 1 #TODO: Parameterize
-        b3 = 1 #TODO: Parameterize 
+        b0 = 1 #TODO: Identify
+        b1 = 0 #TODO: Parameterize - 0 is base case 
+        b2 = 0 #TODO: Parameterize
+        b3 = 0 #TODO: Parameterize 
+        b4 = 1 #TODO: Identify (Time based adjustment) 
 
-        # Confirm this is what math works cuz the logit thing is not logiting for me 
-        def logp(me_i, me_j): 
-            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j
+        def logodds(me_i, me_j, b0, b1, b2, b3, b4, t): 
+            # len(self.exposure_time) = length of exposed time, since it's a list of each time 
+            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j + b4*(t - 1)
 
-        output = logp(me_i, me_j) 
-
-        p = 1 / (1 + math.exp(-(b0 + b1 + b2 + b3))) # TODO: do exp on the negative of output) math.exp(-(output))
-        p_transmit = np.random.binomial(1, p, size=1) 
-
-        # agent is already infected - returns True for infected 
+        # Scenario 1: Already Infected 
         if self.infected == 2: 
-            # self.infected_time += 1 
             return True 
+
+        # Scenario 2: No exposures (no chance of becoming infected)
+        elif self.infected == 1: 
+            return False  
         
-        # no exposure 
-        elif self.infected == 0: 
+        # Scenario 3: Exposed to 1+ contacts 
+        else: 
+            for contact_id, exposure_duration in self.contact_exposure.items(): # for each infected contact... 
+                # determine how long they've been exposed for 
+                t = exposure_duration 
+                output = logodds(me_i, me_j, b0, b1, b2, b3, b4, t) 
+
+                p = 1 / (1 + math.exp(-output)) 
+                infection_event = np.random.binomial(1, p, size=1) 
+                if infection_event == 1: 
+                    self.infected = 2
+                    return True
+            
             return False 
         
-        elif len(self.exposure_time) > 0: 
-            if self.exposure_time[-1] > 200: # after 200 time steps, no longer exposed. # TODO: use paramter
-                self.exposure_time = []
-                self.infected = 0 
-    
-        else: # TODO: --> Get rid of, no longer necessary 
-            random_num = np.random.rand() # uniform draw U(0, 1) 
-            p_transmit = 0.03 # CAN CHANGE - perhaps make threshold value, user input
-            if random_num < p_transmit: # transmission occurs 
-                self.infected = 2 
-        
-        return True if self.infected == 2 else False 
+
 
     def get_symptoms(self, symptom_threshold): 
         """
         Determines if an agent that is infected becomes symptomatic. 
-        # TODO: parameterize (user input) this value 
+        # TODO: parameterize (user input) this value for symptom_threshold
         """
         # TODO: Simple binomial draw for person is symptomatic or asymptomatic 
             # X days after infection (lag --> parameter) 
@@ -312,6 +316,7 @@ class Agent:
         self.infected = 0 
         self.symptom_time = 0
         self.contacts = defaultdict(list)
+        self.contact_exposure = dict()
         self.exposure_time = []
         self.infected_time = 0
         self.symptom_time = 0 
