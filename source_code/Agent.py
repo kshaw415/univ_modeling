@@ -243,6 +243,9 @@ class Agent:
         Output: Boolean
             True --> if agent is currently infected
             False --> if agent is not infected (exposed OR susceptible) 
+
+
+            TODO: for loop for each infected contacts YUH
         '''
         # IDENTIFYING INTERVENTION VARIABLES
         me_i = 0.01 #TODO: Parameterize
@@ -258,7 +261,7 @@ class Agent:
 
         output = logp(me_i, me_j) 
 
-        p = 1 / (1 + math.exp(-(b0 + b1 + b2 + b3)))
+        p = 1 / (1 + math.exp(-(b0 + b1 + b2 + b3))) # TODO: do exp on the negative of output) math.exp(-(output))
         p_transmit = np.random.binomial(1, p, size=1) 
 
         # agent is already infected - returns True for infected 
@@ -273,21 +276,15 @@ class Agent:
         elif len(self.exposure_time) > 0: 
             if self.exposure_time[-1] > 200: # after 200 time steps, no longer exposed. # TODO: use paramter
                 self.exposure_time = []
-                self.infected == 0
+                self.infected = 0 
     
-        else: 
+        else: # TODO: --> Get rid of, no longer necessary 
             random_num = np.random.rand() # uniform draw U(0, 1) 
             p_transmit = 0.03 # CAN CHANGE - perhaps make threshold value, user input
             if random_num < p_transmit: # transmission occurs 
                 self.infected = 2 
-                # self.infected_time += 1
         
         return True if self.infected == 2 else False 
-    
-    # def mask_get_infected(self, me_i, me_j): 
-    #     """
-    #     Calculates probability of infection knowing there is 
-    #     """
 
     def get_symptoms(self, symptom_threshold): 
         """
@@ -319,3 +316,31 @@ class Agent:
         self.infected_time = 0
         self.symptom_time = 0 
         return self 
+
+
+'''
+Funciton takes input on probability scale 
+- the equations constrain always on level of probability (can't get p > 1)
+- #TODO: come up with a vector of reasonable probabilities for the per second 
+         
+- don't take distance into account; model could be made more flexible 
+
+file:///Users/kikuyoshaw/Downloads/COVID%2019%20topological%20influences.pdf
+- 
+
+B4 (distance) 
+- set to 1 
+- 
+
+simulation: 
+- how does chaging B1, 2 etc. affet infected
+linear on log odds scale 
+change in probability will follow sigmoid function 
+
+
+find reasonable betas for B0, B4 
+    - search different assumptions about B1, B2, B3
+
+    
+
+'''
