@@ -107,11 +107,13 @@ class Agent:
         '''
         self.id = id
         self.infected = infected
-        self.contacts = defaultdict(list) #dict([])
+        self.contacts = defaultdict(list) #dict([]) # TODO: make a list?? 
+        self.contacts = [] 
         self.contact_exposure = dict() # {contact.id, exposure_duration}
         x = randint(-14,14) # CAN CHANGE # TODO: Parameter
         y = randint(-12,12) # CAN CHANGE # TODO: Parameter
         self.position = [x, y]
+        self.masked = False # TODO: randomize, masked boolean
         self.cur_time = 0
         self.exposure_time = []
         self.infected_time = 0
@@ -185,22 +187,26 @@ class Agent:
                     q2 = barrier.B
                     if doIntersect(p1, q1, p2, q2): 
                         break 
-                # No barriers intersect - can update contact dict     
-                if cur_time in self.contacts: 
-                    self.contacts[cur_time].append([agent2, distance]) 
-                    agent2.contacts[cur_time].append([self, distance]) 
-                
-                else: 
-                    self.contacts[cur_time] = [[agent2, distance]]
-                    agent2.contacts[cur_time] = [[self, distance]]
+                # No barriers intersect - can update contact if infected
+                if agent2.infected == 2:  
+                    self.contacts.append(agent2)    
 
-                # if other agent is infected: updating the contact_exposure dict {"agent id": int(duration of exposure)}
-                # not needed - just consider dice is rolled each second 
-                if agent2.infected == 2: 
-                    if agent2.id in self.contact_exposure: 
-                        self.contact_exposure[agent2.id] += 1
-                    else: 
-                        self.contact_exposure[agent2.id] = 1
+
+                # if cur_time in self.contacts: 
+                #     self.contacts[cur_time].append([agent2, distance]) 
+                #     agent2.contacts[cur_time].append([self, distance]) 
+                
+                # else: 
+                #     self.contacts[cur_time] = [[agent2, distance]]
+                #     agent2.contacts[cur_time] = [[self, distance]]
+
+                # # if other agent is infected: updating the contact_exposure dict {"agent id": int(duration of exposure)}
+                # # not needed - just consider dice is rolled each second 
+                # if agent2.infected == 2: 
+                #     if agent2.id in self.contact_exposure: 
+                #         self.contact_exposure[agent2.id] += 1
+                #     else: 
+                #         self.contact_exposure[agent2.id] = 1
                 
                 self.cur_time = cur_time # update time 
 
@@ -209,6 +215,7 @@ class Agent:
     
     def get_exposed(self): 
         '''
+        lowkey not needed???
         Determines if agent is exposed based on close contacts 
 
         returns self with updated self.infected and self.exposure_time status
@@ -247,7 +254,6 @@ class Agent:
             
         return False  
     
-
     def get_infected(self, PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
         """
         Determines if an Agent that is exposed becomes infected. Update status 
@@ -255,11 +261,6 @@ class Agent:
         Input: 
 
         Output: 
-
-        for each Agent they were exposed to...
-            identify if other agent is masked
-            assign me_j variable 
-            calculate logodds with given inputs for beta values 
 
         """
         def logodds(me_i, me_j, symp_status):    
@@ -277,60 +278,49 @@ class Agent:
             # TODO: can put beta for being symptomatic (more infectious sympt than asymp)
             result = PARAM_b0 + PARAM_b1*me_i + PARAM_b2*me_j + PARAM_b3*me_i*me_j + PARAM_b4*symp_status
             return result 
-
-
-    def get_infected_old(self): 
-        '''        
-        Determines if an agent that is exposed becomes infected. 
-        Updates Agent's infected status
-
-        Output: Boolean
-            True --> if agent is currently infected
-            False --> if agent is not infected (exposed OR susceptible) 
-        '''
-        # IDENTIFYING INTERVENTION VARIABLES
-        me_i = 0.045 #TODO: Parameterize
-        me_j = 0.078 #TODO: Parameterize
-        b0 = 1 #TODO: Identify
-        b1 = 0 #TODO: Parameterize - 0 is base case 
-        b2 = 0 #TODO: Parameterize
-        b3 = 0 #TODO: Parameterize 
-        b4 = 1 #TODO: Identify (symptomatic based adjustment) 
-        # TODO: j agent symptom status
-
-        def logodds(me_i, me_j, b0, b1, b2, b3, b4, t):    
-            # TODO: can put beta for being symptomatic (more infectious sympt than asymp)
-            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j + b4*t
-
-        # Scenario 1: Already Infected 
-        if self.infected == 2: 
-            return True 
-
-        # Scenario 2: No exposures (no chance of becoming infected)
-        elif self.infected == 1: 
-            return False  
         
-        # Scenario 3: Exposed to 1+ contacts 
+        def flag(status): 
+            """
+            returns 1 if True, 0 if False 
+            """
+            if status == True: 
+                return 1 
+            elif status == False: 
+                return 0
+            else: 
+                print("Issue - not boolean") 
+
+        # Scenario #1: already infected
+        if self.infected == 2: 
+            return True
+        
+        # Scenario #2: no exposures
+        elif len(self.contacts) == 0: 
+            return False 
+
         else: 
-            for contact_id, exposure_duration in self.contact_exposure.items(): # for each infected contact... 
-                # determine how long they've been exposed for 
-                t = exposure_duration # TODO: symptom status of j 
-
-                output = logodds(me_i, me_j, b0, b1, b2, b3, b4, t) 
-
-                p = 1 / (1 + math.exp(-output)) 
+            for agent_j in self.contacts:
+                # identify if masked
+                me_j = flag(agent_j.masked)
+                me_i = flag(self.masked)
+                symp = flag(self.symptomatic)
+                # calculate logodds 
+                output = logodds(me_i, me_j, symp)
+                p = 1 / (1 + math.exp(-output))
+                
+                # roll dice: determine if an infection event occurs (Bernoulli)
                 infection_event = np.random.binomial(1, p, size=1) 
+
                 if infection_event == 1: 
-                    self.infected = 2
+                    self.infected = 2 # update status 
                     # roll if they will become symptomatic 
                     p_sympt = 0.5 # TODO: Parameterize 
                     self.can_symptoms = np.random.binomial(1, p_sympt, size=1) # 1 --> going to become symptomatic. 
                     # define time when they will actually become symptomatic 
                     return True
             
-            return False 
+        return False 
         
-
     def get_symptoms(self, symptom_onset_threshold): 
         """
         Determines if an agent that is infected becomes symptomatic. 
@@ -347,8 +337,8 @@ class Agent:
             if self.infected_time >= symptom_onset_threshold: 
                 self.symptomatic = True 
                 return True 
-        
-        return False  
+        else: 
+            return False  
 
 
     def recover(self, param_immunity): 
@@ -359,7 +349,7 @@ class Agent:
         self.infected = 0 
         self.can_symptoms = False
         self.symptomatic = False 
-        self.contacts = defaultdict(list)
+        self.contacts = []
         self.contact_exposure = dict()
         self.exposure_time = []
         self.infected_time = 0

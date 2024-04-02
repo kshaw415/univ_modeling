@@ -8,6 +8,8 @@ import Barrier
 import pprint
 from model import Model 
 import params
+import multiprocessing
+import random 
 
 ### HELPER FUNCTIONS ###
 def remove_from_pop(agent, agents): 
@@ -18,6 +20,20 @@ def remove_from_pop(agent, agents):
         agents.remove(agent)
     
     return agents
+
+
+def worker_function(seed):
+    random.seed(seed) # Set
+    result = random.random()
+    return result 
+
+# if __name__ == "__main__": 
+#     num_processes = 4 # number of processes to parallelize
+#     seeds = [123, 456, 789, 101112]
+#     with multiprocessing.Pool(num_processes) as pool: 
+#         results = pool.map(worker_function, seeds)
+    
+#     print("Results:", results) 
 
 
 
@@ -100,18 +116,18 @@ if __name__ == "__main__":
             if i == len(agents) - 1: # last agent
                 break 
             else: 
-                # Determine close contacts 
-                # agent = agent.agent_distance(agents[i + 1], step, THRESHOLD, barriers) 
+                # Determine infected contacts 
                 agent = agent.agent_distance(agents, step, THRESHOLD, barriers) 
-                # Determine if an agent is exposed to an infected agent 
-                if agent.get_exposed(): 
-                    # Check if thye have been exposed for max number of time 
-                    for id, exposure_duration in agent.contact_exposure.items(): 
-                        if exposure_duration > 86400: # exposed for 3 days (8 hour days)
-                            agent = agent.recover() 
+                
+                # # Determine if an agent is exposed to an infected agent 
+                # if agent.get_exposed(): 
+                #     # Check if thye have been exposed for max number of time 
+                #     for id, exposure_duration in agent.contact_exposure.items(): 
+                #         if exposure_duration > 86400: # exposed for 3 days (8 hour days)
+                #             agent = agent.recover() 
 
                 # Determine if an agent becomes infected 
-                if agent.get_infected(): 
+                if agent.get_infected(-4.95, 0, 0, 0, .03): 
                     agent.infected_time += 1
                     if agent.get_symptoms(symptom_THRESHOLD): 
                         agent.symptom_time += 1
@@ -213,4 +229,3 @@ figInf.update_layout(yaxis_range=[0, num_agents])
 figSus.show()
 figExp.show()
 figInf.show()
-
