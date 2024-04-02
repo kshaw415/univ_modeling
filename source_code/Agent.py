@@ -115,7 +115,10 @@ class Agent:
         self.cur_time = 0
         self.exposure_time = []
         self.infected_time = 0
+        self.can_symptoms = False # false if asymptomatic infection, True if eventually will become symptomatic 
+        self.symptomatic = False # Symptom flagger, False if no symptoms, True if currently presenting symptoms
         self.symptom_time = 0 
+        self.immune = False # True --> 
 
         # intervention
         self.masking = False # TODO: Parameter
@@ -148,9 +151,7 @@ class Agent:
         if new_y < -13: 
             new_y += 1
 
-        # determine if new step crosses any barriers 
-        # IF THIS DOESN'T WORK, remove the for loop. 
-        # TODO: allows for barrier crossing if passes first barrier, but then chooses new one. 
+
         for barrier in barriers: 
             cross_barrier = Barrier.det_crossbarrier(barrier, self.position, [new_x, new_y])
             while cross_barrier: 
@@ -194,6 +195,7 @@ class Agent:
                     agent2.contacts[cur_time] = [[self, distance]]
 
                 # if other agent is infected: updating the contact_exposure dict {"agent id": int(duration of exposure)}
+                # not needed - just consider dice is rolled each second 
                 if agent2.infected == 2: 
                     if agent2.id in self.contact_exposure: 
                         self.contact_exposure[agent2.id] += 1
@@ -209,12 +211,16 @@ class Agent:
         '''
         Determines if agent is exposed based on close contacts 
 
-        returns self with updated self.infected and self.exposure_time status 
+        returns self with updated self.infected and self.exposure_time status
+
+        TODO: exposure doesn't require count. We just determine close contact 
+            and then it's like ooh infect
+
         '''
         # if agent itself is already infected or 
-        if self.infected == 2:
+        if self.infected == 2 or self.immune == True:
             return False  
-        
+                
         else: 
             # Susceptible or exposed 
             infected_contacts = 0 # counter
@@ -232,15 +238,48 @@ class Agent:
                 if infected_contacts > 0:
                     self.infected = 1 # update status to exposed 
                     self.exposure_time.append(self.cur_time)
+                    return True
 
-                for id, exposure_time in self.contact_exposure.items(): 
-                    if exposure_time > 900: # 900
-                        self.infected = 1 # become exposed 
-                        return True
+                # for id, exposure_time in self.contact_exposure.items(): 
+                #     if exposure_time > 900: # 900
+                #         self.infected = 1 # become exposed 
+                #         return True
             
         return False  
     
-    def get_infected(self): 
+
+    def get_infected(self, PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
+        """
+        Determines if an Agent that is exposed becomes infected. Update status 
+
+        Input: 
+
+        Output: 
+
+        for each Agent they were exposed to...
+            identify if other agent is masked
+            assign me_j variable 
+            calculate logodds with given inputs for beta values 
+
+        """
+        def logodds(me_i, me_j, symp_status):    
+            """
+            Function that calculates the log odds based on the given parameters 
+            
+            Inputs: 
+                me_i --> Boolean, Agent (denoted as i) masking status
+                me_j --> Boolean, infected Agent (denoted as j) masking status 
+                symp_status --> Boolean, symptomatic status of other Agent 
+
+            Outputs: 
+
+            """
+            # TODO: can put beta for being symptomatic (more infectious sympt than asymp)
+            result = PARAM_b0 + PARAM_b1*me_i + PARAM_b2*me_j + PARAM_b3*me_i*me_j + PARAM_b4*symp_status
+            return result 
+
+
+    def get_infected_old(self): 
         '''        
         Determines if an agent that is exposed becomes infected. 
         Updates Agent's infected status
@@ -248,9 +287,6 @@ class Agent:
         Output: Boolean
             True --> if agent is currently infected
             False --> if agent is not infected (exposed OR susceptible) 
-
-
-            TODO: confirm how to calculate b0 and b4
         '''
         # IDENTIFYING INTERVENTION VARIABLES
         me_i = 0.045 #TODO: Parameterize
@@ -259,11 +295,12 @@ class Agent:
         b1 = 0 #TODO: Parameterize - 0 is base case 
         b2 = 0 #TODO: Parameterize
         b3 = 0 #TODO: Parameterize 
-        b4 = 1 #TODO: Identify (Time based adjustment) 
+        b4 = 1 #TODO: Identify (symptomatic based adjustment) 
+        # TODO: j agent symptom status
 
-        def logodds(me_i, me_j, b0, b1, b2, b3, b4, t): 
-            # len(self.exposure_time) = length of exposed time, since it's a list of each time 
-            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j + b4*(t - 1)
+        def logodds(me_i, me_j, b0, b1, b2, b3, b4, t):    
+            # TODO: can put beta for being symptomatic (more infectious sympt than asymp)
+            return b0 + b1*me_i + b2*me_j + b3*me_i*me_j + b4*t
 
         # Scenario 1: Already Infected 
         if self.infected == 2: 
@@ -277,75 +314,59 @@ class Agent:
         else: 
             for contact_id, exposure_duration in self.contact_exposure.items(): # for each infected contact... 
                 # determine how long they've been exposed for 
-                t = exposure_duration 
+                t = exposure_duration # TODO: symptom status of j 
+
                 output = logodds(me_i, me_j, b0, b1, b2, b3, b4, t) 
 
                 p = 1 / (1 + math.exp(-output)) 
                 infection_event = np.random.binomial(1, p, size=1) 
-                print(p)
                 if infection_event == 1: 
                     self.infected = 2
+                    # roll if they will become symptomatic 
+                    p_sympt = 0.5 # TODO: Parameterize 
+                    self.can_symptoms = np.random.binomial(1, p_sympt, size=1) # 1 --> going to become symptomatic. 
+                    # define time when they will actually become symptomatic 
                     return True
             
             return False 
         
 
-    def get_symptoms(self, symptom_threshold): 
+    def get_symptoms(self, symptom_onset_threshold): 
         """
         Determines if an agent that is infected becomes symptomatic. 
         # TODO: parameterize (user input) this value for symptom_threshold
+
+
+        assign symptomatic flag once hit time of determined 
+        check if currently >= symptom time threshold (if yes, become symptomatic) 
+
         """
-        # TODO: Simple binomial draw for person is symptomatic or asymptomatic 
-            # X days after infection (lag --> parameter) 
+        # infected, not symptomatic yet, but drew to be symptomatic 
+        if self.infected == 2 and self.symptomatic == False and self.can_symptoms == True: 
+            # Becomes symptomatic  
+            if self.infected_time >= symptom_onset_threshold: 
+                self.symptomatic = True 
+                return True 
         
-        # Identify what day since exposure 
-        exposure_prob = symptom_threshold # this will be a ???
-        random_num = np.random.rand()
-        if random_num < exposure_prob: 
-            # self.symptom_time += 1 # start symptom counter 
-        
-            return True 
-        return False 
+        return False  
 
 
-    def recover(self): 
+    def recover(self, param_immunity): 
         """
         Recover based on time infected 
-        
+        # TODO: Update (3/28)
         """
         self.infected = 0 
-        self.symptom_time = 0
+        self.can_symptoms = False
+        self.symptomatic = False 
         self.contacts = defaultdict(list)
         self.contact_exposure = dict()
         self.exposure_time = []
         self.infected_time = 0
-        self.symptom_time = 0 
+        if param_immunity == True: 
+            self.immune = True 
+        else: 
+            self.immune = False 
         return self 
 
 
-'''
-Function takes input on probability scale 
-- the equations constrain always on level of probability (can't get p > 1)
-- #TODO: come up with a vector of reasonable probabilities for the per second 
-         
-- don't take distance into account; model could be made more flexible 
-
-file:///Users/kikuyoshaw/Downloads/COVID%2019%20topological%20influences.pdf
-- 
-
-B4 (distance) 
-- set to 1 
-- 
-
-simulation: 
-- how does chaging B1, 2 etc. affet infected
-linear on log odds scale 
-change in probability will follow sigmoid function 
-
-
-find reasonable betas for B0, B4 
-    - search different assumptions about B1, B2, B3
-
-    
-
-'''

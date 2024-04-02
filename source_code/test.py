@@ -9,7 +9,7 @@ import pprint
 from model import Model 
 import params
 
-### HELPER FUNCTIONS
+### HELPER FUNCTIONS ###
 def remove_from_pop(agent, agents): 
     """
     Agent is infected and symptomatic. They are removed from population and return after 5 days (14400 sec) 
