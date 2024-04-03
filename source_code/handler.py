@@ -32,4 +32,4 @@ if __name__ == "__main__":
         np.random.seed(seed)
 
         # run model code here
-        
+    # print(seeds)

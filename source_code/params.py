@@ -42,28 +42,22 @@ def parse_data(file):
 
             # Thresholds
             DISTANCE_THRESHOLD = float(line[4])
-            PROB_TRANSMISSION = float(line[5])
-            Asympt_ProbInfect = float(line[6])
-            Sympt_ProbInfect = float(line[7])
-            me_i = float(line[8])
-            me_j = float(line[9])
-            b0 = float(line[10])
-            b1 = float(line[11])
-            b2 = float(line[12])
-            b3 = float(line[13])
-            b4 = float(line[14])
+            Symptom_threshold = float(line[5])
+            me_i = float(line[6])
+            b0 = float(line[7])
+            b1 = float(line[8])
+            b2 = float(line[9])
+            b3 = float(line[10])
+            b4 = float(line[11])
 
             # Model Running Inputs
-            num_agents = float(line[15])
-            num_steps = float(line[16])
-
-            # extra stuff i keep forgetting
-            symptom_threshold = float(line[17]) # is this a pmf tho. 
+            num_agents = float(line[12])
+            num_steps = float(line[13])
 
         grid_dims = [min_x, max_x, min_y, max_y]
         file.close()
     
-    return grid_dims, DISTANCE_THRESHOLD, PROB_TRANSMISSION, Asympt_ProbInfect, Sympt_ProbInfect, me_i, me_j, b0, b1, b2, b3, b4, num_agents, num_steps
+    return grid_dims, DISTANCE_THRESHOLD, Symptom_threshold, me_i, b0, b1, b2, b3, b4, num_agents, num_steps
 
 # if __name__ == "__main__": 
 #     barrier_path = "params2 - 10x10.csv"
