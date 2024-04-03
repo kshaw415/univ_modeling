@@ -94,25 +94,27 @@ class Agent:
     
     '''
 
-    def __init__(self, id: int, infected: int): 
+    def __init__(self, id: int, infected: int, PARAM_masking: bool, xboundaries : list, yboundaries : list): 
         '''
         Initialization method for Agent class
 
         Fields: 
             id --> int, unique agent ID
-            infected --> int, 0 if Susceptible, 1 if exposed, 2 if infected
+            infected --> int, 0 if Susceptible, 1 if infected
             contacts --> dict, contains all contacts. key is time step, value 
                                 is list of Agent
             exposure_time --> list of times Agent has been exposed
         '''
         self.id = id
         self.infected = infected
-        # self.contacts = defaultdict(list) #dict([]) # TODO: make a list?? 
+
         self.contacts = [] 
         self.contact_exposure = dict() # {contact.id, exposure_duration}
-        x = randint(-14,14) # CAN CHANGE # TODO: Parameter
-        y = randint(-12,12) # CAN CHANGE # TODO: Parameter
+        
+        x = randint(xboundaries[0], xboundaries[1]) 
+        y = randint(yboundaries[0], yboundaries[1]) 
         self.position = [x, y]
+        
         self.cur_time = 0
         self.exposure_time = []
         self.infected_time = 0
@@ -122,7 +124,14 @@ class Agent:
         self.immune = False # True --> 
         
         # intervention
-        self.masked = False # TODO: Parameter
+        if PARAM_masking: 
+            num = random.uniform(0, 1)
+            if num < 0.7: # 70% masking compliance 
+                self.masked = True 
+            else: 
+                self.masked = False
+        else: 
+            self.masked = False
         self.isolating = False # True --> isolating and goes off screen until recover
 
     def __str__(self): 
@@ -187,7 +196,7 @@ class Agent:
                     if doIntersect(p1, q1, p2, q2): 
                         break 
                 # No barriers intersect - can update contact if infected
-                if agent2.infected == 2:  
+                if agent2.infected == 1:  
                     self.contacts.append(agent2)    
                 
                 self.cur_time = cur_time # update time 
@@ -195,46 +204,6 @@ class Agent:
 
         return self
     
-    # def get_exposed(self): 
-    #     '''
-    #     lowkey not needed???
-    #     Determines if agent is exposed based on close contacts 
-
-    #     returns self with updated self.infected and self.exposure_time status
-
-    #     TODO: exposure doesn't require count. We just determine close contact 
-    #         and then it's like ooh infect
-
-    #     '''
-    #     # if agent itself is already infected or 
-    #     if self.infected == 2 or self.immune == True:
-    #         return False  
-                
-    #     else: 
-    #         # Susceptible or exposed 
-    #         infected_contacts = 0 # counter
-
-    #         # Scenario 1: No close contacts 
-    #         if len(self.contacts) == 0: 
-    #             return False
-            
-    #         else:
-    #             close_contacts = self.contacts[self.cur_time]
-    #             for contact in close_contacts: 
-    #                 if contact[0].infected == 2: 
-    #                     infected_contacts += 1
-
-    #             if infected_contacts > 0:
-    #                 self.infected = 1 # update status to exposed 
-    #                 self.exposure_time.append(self.cur_time)
-    #                 return True
-
-    #             # for id, exposure_time in self.contact_exposure.items(): 
-    #             #     if exposure_time > 900: # 900
-    #             #         self.infected = 1 # become exposed 
-    #             #         return True
-            
-    #     return False  
     
     def get_infected(self, PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
         """
@@ -273,7 +242,7 @@ class Agent:
                 print("Issue - not boolean") 
 
         # Scenario #1: already infected
-        if self.infected == 2: 
+        if self.infected == 1: 
             return True
         
         # Scenario #2: no exposures
@@ -294,7 +263,7 @@ class Agent:
                 infection_event = np.random.binomial(1, p, size=1) 
 
                 if infection_event == 1: 
-                    self.infected = 2 # update status 
+                    self.infected = 1 # update status 
                     # roll if they will become symptomatic 
                     p_sympt = 0.5 # TODO: Parameterize 
                     self.can_symptoms = np.random.binomial(1, p_sympt, size=1) # 1 --> going to become symptomatic. 
@@ -314,7 +283,7 @@ class Agent:
 
         """
         # infected, not symptomatic yet, but drew to be symptomatic 
-        if self.infected == 2 and self.symptomatic == False and self.can_symptoms == True: 
+        if self.infected == 1 and self.symptomatic == False and self.can_symptoms == True: 
             # Becomes symptomatic  
             if self.infected_time >= symptom_onset_threshold: 
                 self.symptomatic = True 

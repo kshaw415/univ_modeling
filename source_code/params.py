@@ -43,7 +43,8 @@ def parse_data(file):
             # Thresholds
             DISTANCE_THRESHOLD = float(line[4])
             Symptom_threshold = float(line[5])
-            me_i = float(line[6])
+            masking = bool(line[6])
+            immunity = bool(line[14])
             b0 = float(line[7])
             b1 = float(line[8])
             b2 = float(line[9])
@@ -51,13 +52,14 @@ def parse_data(file):
             b4 = float(line[11])
 
             # Model Running Inputs
-            num_agents = float(line[12])
-            num_steps = float(line[13])
+            num_agents = int(line[12])
+            num_steps = int(line[13])
 
-        grid_dims = [min_x, max_x, min_y, max_y]
+        xbounds = [min_x, max_x]
+        ybounds = [min_y, max_y]
         file.close()
     
-    return grid_dims, DISTANCE_THRESHOLD, Symptom_threshold, me_i, b0, b1, b2, b3, b4, num_agents, num_steps
+    return xbounds, ybounds, DISTANCE_THRESHOLD, Symptom_threshold, masking, b0, b1, b2, b3, b4, num_agents, num_steps, immunity
 
 # if __name__ == "__main__": 
 #     barrier_path = "params2 - 10x10.csv"
