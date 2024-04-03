@@ -107,13 +107,12 @@ class Agent:
         '''
         self.id = id
         self.infected = infected
-        self.contacts = defaultdict(list) #dict([]) # TODO: make a list?? 
+        # self.contacts = defaultdict(list) #dict([]) # TODO: make a list?? 
         self.contacts = [] 
         self.contact_exposure = dict() # {contact.id, exposure_duration}
         x = randint(-14,14) # CAN CHANGE # TODO: Parameter
         y = randint(-12,12) # CAN CHANGE # TODO: Parameter
         self.position = [x, y]
-        self.masked = False # TODO: randomize, masked boolean
         self.cur_time = 0
         self.exposure_time = []
         self.infected_time = 0
@@ -123,7 +122,7 @@ class Agent:
         self.immune = False # True --> 
         
         # intervention
-        self.masking = False # TODO: Parameter
+        self.masked = False # TODO: Parameter
         self.isolating = False # True --> isolating and goes off screen until recover
 
     def __str__(self): 
@@ -190,69 +189,52 @@ class Agent:
                 # No barriers intersect - can update contact if infected
                 if agent2.infected == 2:  
                     self.contacts.append(agent2)    
-
-
-                # if cur_time in self.contacts: 
-                #     self.contacts[cur_time].append([agent2, distance]) 
-                #     agent2.contacts[cur_time].append([self, distance]) 
-                
-                # else: 
-                #     self.contacts[cur_time] = [[agent2, distance]]
-                #     agent2.contacts[cur_time] = [[self, distance]]
-
-                # # if other agent is infected: updating the contact_exposure dict {"agent id": int(duration of exposure)}
-                # # not needed - just consider dice is rolled each second 
-                # if agent2.infected == 2: 
-                #     if agent2.id in self.contact_exposure: 
-                #         self.contact_exposure[agent2.id] += 1
-                #     else: 
-                #         self.contact_exposure[agent2.id] = 1
                 
                 self.cur_time = cur_time # update time 
 
 
         return self
     
-    def get_exposed(self): 
-        '''
-        lowkey not needed???
-        Determines if agent is exposed based on close contacts 
+    # def get_exposed(self): 
+    #     '''
+    #     lowkey not needed???
+    #     Determines if agent is exposed based on close contacts 
 
-        returns self with updated self.infected and self.exposure_time status
+    #     returns self with updated self.infected and self.exposure_time status
 
-        TODO: exposure doesn't require count. We just determine close contact 
-            and then it's like ooh infect
+    #     TODO: exposure doesn't require count. We just determine close contact 
+    #         and then it's like ooh infect
 
-        '''
-        # if agent itself is already infected or 
-        if self.infected == 2 or self.immune == True:
-            return False  
+    #     '''
+    #     # if agent itself is already infected or 
+    #     if self.infected == 2 or self.immune == True:
+    #         return False  
                 
-        else: 
-            # Susceptible or exposed 
-            infected_contacts = 0 # counter
+    #     else: 
+    #         # Susceptible or exposed 
+    #         infected_contacts = 0 # counter
 
-            # Scenario 1: No close contacts 
-            if len(self.contacts) == 0: 
-                return False
+    #         # Scenario 1: No close contacts 
+    #         if len(self.contacts) == 0: 
+    #             return False
             
-            else:
-                close_contacts = self.contacts[self.cur_time]
-                for contact in close_contacts: 
-                    if contact[0].infected == 2: 
-                        infected_contacts += 1
+    #         else:
+    #             close_contacts = self.contacts[self.cur_time]
+    #             for contact in close_contacts: 
+    #                 if contact[0].infected == 2: 
+    #                     infected_contacts += 1
 
-                if infected_contacts > 0:
-                    self.infected = 1 # update status to exposed 
-                    self.exposure_time.append(self.cur_time)
-                    return True
+    #             if infected_contacts > 0:
+    #                 self.infected = 1 # update status to exposed 
+    #                 self.exposure_time.append(self.cur_time)
+    #                 return True
 
-                # for id, exposure_time in self.contact_exposure.items(): 
-                #     if exposure_time > 900: # 900
-                #         self.infected = 1 # become exposed 
-                #         return True
+    #             # for id, exposure_time in self.contact_exposure.items(): 
+    #             #     if exposure_time > 900: # 900
+    #             #         self.infected = 1 # become exposed 
+    #             #         return True
             
-        return False  
+    #     return False  
     
     def get_infected(self, PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
         """

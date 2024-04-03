@@ -14,19 +14,6 @@ import csv
 
 ### HELPER FUNCTIONS ###
 
-def worker_function(seed):
-    random.seed(seed) # Set
-    result = random.random()
-    return result 
-
-# if __name__ == "__main__": 
-#     num_processes = 4 # number of processes to parallelize
-#     seeds = [123, 456, 789, 101112]
-#     with multiprocessing.Pool(num_processes) as pool: 
-#         results = pool.map(worker_function, seeds)
-    
-#     print("Results:", results) 
-
 def write_to_csv(timesteps, num_s, num_i): 
     """
     Names and writes output data to a unique csv file 
@@ -49,6 +36,8 @@ def write_to_csv(timesteps, num_s, num_i):
 if __name__ == "__main__": 
     
     ## Receive all data from params file ## 
+    
+    ## params for or referenced in simulation
     PARAM_num_agents = 0
     PARAM_distance_threshold = 0
     PARAM_symptom_threshold = 0
@@ -58,7 +47,15 @@ if __name__ == "__main__":
     PARAM_b2 = 0
     PARAM_b3 = 0
     PARAM_b4 = 0
+    PARAM_immunity = False 
     
+    ## params for Agent class only 
+    # boundaries for simulation space 
+    PARAM_xmin = 0
+    PARAM_xmax = 0
+    PARAM_ymin = 0 
+    PARAM_ymax = 0 
+    PARAM_masked = False 
 
     ## Initiate variables 
     num_agents = 50
