@@ -12,15 +12,6 @@ import multiprocessing
 import random 
 
 ### HELPER FUNCTIONS ###
-def remove_from_pop(agent, agents): 
-    """
-    Agent is infected and symptomatic. They are removed from population and return after 5 days (14400 sec) 
-    """
-    if agent.infected_time > 14400: 
-        agents.remove(agent)
-    
-    return agents
-
 
 def worker_function(seed):
     random.seed(seed) # Set
@@ -38,7 +29,20 @@ def worker_function(seed):
 
 
 if __name__ == "__main__": 
-    # Number of agents
+    
+    ## Receive all data from params file ## 
+    PARAM_num_agents = 0
+    PARAM_distance_threshold = 0
+    PARAM_symptom_threshold = 0
+    PARAM_num_steps = 0
+    PARAM_b0 = 0
+    PARAM_b1 = 0
+    PARAM_b2 = 0
+    PARAM_b3 = 0
+    PARAM_b4 = 0
+    
+
+    ## Initiate variables 
     num_agents = 50
     agents = []
     agent_positions = []
@@ -110,34 +114,34 @@ if __name__ == "__main__":
         for i in range(len(agents)):
             # identify current agent working on 
             agent = agents[i]
-
-            # Take random step forward 
-            agent_positions[i] = agent.random_walk(barriers)
-            if i == len(agents) - 1: # last agent
-                break 
-            else: 
-                # Determine infected contacts 
-                agent = agent.agent_distance(agents, step, THRESHOLD, barriers) 
-                
-                # # Determine if an agent is exposed to an infected agent 
-                # if agent.get_exposed(): 
-                #     # Check if thye have been exposed for max number of time 
-                #     for id, exposure_duration in agent.contact_exposure.items(): 
-                #         if exposure_duration > 86400: # exposed for 3 days (8 hour days)
-                #             agent = agent.recover() 
-
-                # Determine if an agent becomes infected 
-                if agent.get_infected(-4.95, 0, 0, 0, .03): 
-                    agent.infected_time += 1
-                    if agent.get_symptoms(symptom_THRESHOLD): 
-                        agent.symptom_time += 1
-                    if agent.symptom_time >= 1000: # symptoms 
-                        agent.recover()
-
-                # remove infected people from the population 
-                agents = remove_from_pop(agent, agents)
-                
             
+            if agent.isolating: 
+                agent.infected_time += 1
+                agent.symptom_time += 1
+                if agent.symptom_time >= 200: 
+                    agent.recover(False) #TODO: param_immunity input
+            else: 
+                # Take random step forward 
+                agent.random_walk(barriers)
+                agent = agent.agent_distance(agents, step, THRESHOLD, barriers) 
+
+                if i == len(agents) - 1: 
+                    break 
+                else: 
+                # Determine if an agent becomes infected 
+                    if agent.get_infected(-4.95, 0, 0, 0, .03): 
+                        # increase infected time
+                        agent.infected_time += 1
+                        
+                        # determine if the agent gets symptoms
+                        if agent.get_symptoms(symptom_THRESHOLD): 
+                            agent.symptom_time += 1
+                            agent.isolating = agent.self_isolate()
+
+                        # determine if agent has recovered 
+                        elif agent.symptom_time >= 200: # symptoms 
+                            agent.recover(False) # TODO: param_immuity input
+                    
             # output data
             if agent.infected == 0: 
                 num_sus += 1

@@ -121,10 +121,10 @@ class Agent:
         self.symptomatic = False # Symptom flagger, False if no symptoms, True if currently presenting symptoms
         self.symptom_time = 0 
         self.immune = False # True --> 
-
+        
         # intervention
         self.masking = False # TODO: Parameter
-        
+        self.isolating = False # True --> isolating and goes off screen until recover
 
     def __str__(self): 
         return f"{self.id} infected_status: {self.infected}"
@@ -341,6 +341,18 @@ class Agent:
             return False  
 
 
+    def self_isolate(self): 
+        """
+        Self isolates based on symptom status
+        """
+        if self.symptomatic: 
+            isolate_event = np.random.binomial(1, 0.7, size=1) # 70% isolates if symptomatic 
+            if isolate_event == 1: 
+                self.position = [-15, -13]
+                return True 
+
+
+
     def recover(self, param_immunity): 
         """
         Recover based on time infected 
@@ -353,6 +365,7 @@ class Agent:
         self.contact_exposure = dict()
         self.exposure_time = []
         self.infected_time = 0
+        self.isolating = False
         if param_immunity == True: 
             self.immune = True 
         else: 
