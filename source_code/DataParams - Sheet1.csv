@@ -1,2 +1,2 @@
 MinX,MaxX,MinY,MaxY,Distance_threshold,Symptom_threshold,masking,b0,b1,b2,b3,b4,num_agents,num_steps,immunity flag
--15,15,-13,13,6,0.6,FALSE,-4.95,0,0,0,-1.237,50,1000,FALSE
+-15,15,-13,13,6,0.6,TRUE,-4.95,0,0,0,0.03,50,1000,FALSE

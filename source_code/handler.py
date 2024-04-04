@@ -2,6 +2,8 @@ import random
 import simulator
 import numpy as np
 import multiprocessing
+import pandas as pd
+import time 
 
 barrier_file = "Barriers.csv"
 params_file = "Params.csv"
@@ -22,29 +24,27 @@ def generate_seeds(n):
 
     return seeds 
 
+seeds = generate_seeds(4) # 
 
-def run(seed, barrier_file, param_file): 
-    output = simulator(seed, "barrier.csv", "params.csv") 
-    return output 
+params_df = pd.read_csv("DataParams - Sheet1 (1).csv")
 
+def run(row_seed_pair): 
+    row, seed = row_seed_pair
+    parameters = row 
+    simulator.run_model(seed, "barrier.csv", parameters) 
+
+params_seed_pairs = zip(params_df.values, seeds) 
 
 if __name__ == "__main__": 
-    num_processes = 4 # number of processes to parallelize
-    seeds = generate_seeds(num_processes)
-
+    # num_processes = 10 # number of processes to parallelize
+    # seeds = generate_seeds(num_processes)
+    start = time.time()
     # parallelized 
     with multiprocessing.Pool() as pool: 
-        results = pool.map(run, seeds)
-
-    # not parallelized (old)
-    for i, seed in enumerate(seeds): 
-        np.random.seed(seed)
-
-        barrier_file = "barrier.csv"
-        params_file = "params.csv"
-
-        simulator(seed, barrier_file, params_file)
-
+        pool.map(run, params_seed_pairs)
+        
+    end = time.time()
+    print(end - start)
     
     """
     write a loop for each scenario 

@@ -12,60 +12,62 @@ import multiprocessing
 import random 
 import csv 
 
-### HELPER FUNCTIONS ###
 
-def write_to_csv(timesteps, num_s, num_i, num_iso): 
+def write_to_csv(seed, timesteps, num_s, num_i, num_iso, num_masked): 
     """
     Names and writes output data to a unique csv file 
     Inputs: 
         timesteps --> list, time steps
         num_s --> list, number of susceptible agents at each time step
         num_i --> list, number of infected agents at each time step 
-        #TODO: num_a --> list, number of active agents at each time step 
+        num_iso --> list, number of active agents at each time step 
     """
-    data = zip(timesteps, num_s, num_i, num_iso)
+    data = zip(timesteps, num_s, num_i, num_iso, num_masked)
 
-    file_name = "testfilename.csv" #TODO: unique, using seed. 
+    file_name = f'{seed}_output.csv' 
 
     with open(file_name, mode='w', newline='') as file: 
         writer = csv.writer(file) 
-        writer.writerow(['Time (in Seconds)', 'Susceptible Agents', 'Infected Agents', 'Isolating Agents'])
+        writer.writerow(['Time (in Seconds)', 'Susceptible Agents', 'Infected Agents', 'Isolating Agents', 'Masked Agents'])
         writer.writerows(data)
 
 
-if __name__ == "__main__": 
-    
+def run_model(seed, barriers, parameters): 
+    """
+    Code to run a single simulation 
+    """   
+    random.seed(seed) # set the seed 
+
     ## Receive all data from params file ## 
-    xbounds, ybounds, distance_thresh, symptom_thresh, masking, \
-        b0, b1, b2, b3, b4, num_agents, num_steps, immunity = params.parse_data("DataParams - Sheet1.csv")
-    
+    barriers = params.barrier_data("params - RoomsOpen.csv")
+
+    # xbounds, ybounds, distance_thresh, symptom_thresh, masking, \
+    #     b0, b1, b2, b3, b4, num_agents, num_steps, immunity = params.parse_data(param_file)
+
     ## params for or referenced in simulation
-    PARAM_num_agents = num_agents
-    PARAM_distance_threshold = distance_thresh
-    PARAM_symptom_threshold = symptom_thresh
-    PARAM_num_steps = num_steps
-    PARAM_b0 = b0
-    PARAM_b1 = b1
-    PARAM_b2 = b2
-    PARAM_b3 = b3
-    PARAM_b4 = b4
-    PARAM_immunity = immunity 
-    
+    PARAM_num_agents = parameters[12]
+    PARAM_distance_threshold = parameters[4]
+    PARAM_symptom_threshold = parameters[5]
+    PARAM_num_steps = parameters[13]
+    PARAM_b0 = parameters[7]
+    PARAM_b1 = parameters[8]
+    PARAM_b2 = parameters[9]
+    PARAM_b3 = parameters[10]
+    PARAM_b4 = parameters[11]
+    PARAM_immunity = parameters[14] 
+
     ## params for Agent class only 
     # boundaries for simulation space 
-    PARAM_xboundaries = xbounds
-    PARAM_yboundaries = ybounds
+    PARAM_xboundaries = [parameters[0], parameters[1]]
+    PARAM_yboundaries = [parameters[2], parameters[3]]
 
-    PARAM_masking = False # True if masking is turned on 
+    PARAM_masking = parameters[6] # True if masking is turned on 
 
 
     ## Initiate variables 
     agents = []
     agent_positions = []
 
-    # PARAM_num_agents = 50 
-    # THRESHOLD = 6
-    # symptom_THRESHOLD = 0.6 # TODO: this is COMPLETELY arbitrary 
 
     # Initialize agents with random positions
     for i in range(PARAM_num_agents): 
@@ -75,13 +77,13 @@ if __name__ == "__main__":
         agents.append(agent)
         agent_positions.append(agent.position)
 
-    barriers = params.barrier_data("params - RoomsOpen.csv")
-    
+
 
     # data for graphing/analysis 
     tot_sus = []
     tot_inf = []
     tot_iso = []
+    tot_masked = []
 
     # Perform random walk for a certain number of steps
     # num_steps = 1000 #28800 is 1 day (8 hours) 
@@ -89,6 +91,7 @@ if __name__ == "__main__":
         num_sus = 0
         num_inf = 0 
         num_iso = 0 
+        num_masked = 0
 
         for i in range(len(agents)):
             # identify current agent working on 
@@ -98,7 +101,7 @@ if __name__ == "__main__":
                 agent.infected_time += 1
                 agent.symptom_time += 1
                 if agent.symptom_time >= 200: 
-                    agent.recover(False) #TODO: param_immunity input
+                    agent.recover(PARAM_immunity) 
             else: 
                 # Take random step forward 
                 agent.random_walk(barriers)
@@ -108,7 +111,7 @@ if __name__ == "__main__":
                     break 
                 else: 
                 # Determine if an agent becomes infected 
-                    if agent.get_infected(-4.95, 0, 0, 0, .03): 
+                    if agent.get_infected(PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
                         # increase infected time
                         agent.infected_time += 1
                         
@@ -130,12 +133,18 @@ if __name__ == "__main__":
                 print("curious this should never happen")
             if agent.isolating: 
                 num_iso += 1
+            if agent.masked == True: 
+                num_masked += 1
 
         tot_sus.append(num_sus)
         tot_inf.append(num_inf)
         tot_iso.append(num_iso)
+        tot_masked.append(num_masked)
 
 
     # Output Data to CSV File 
     x_timestep = [i for i in range(1, PARAM_num_steps)] 
-    write_to_csv(x_timestep, tot_sus, tot_inf, tot_iso) # TODO: number of people masked 
+    write_to_csv(seed, x_timestep, tot_sus, tot_inf, tot_iso, tot_masked) # TODO: number of people masked 
+
+
+# run_model(42, "params - 10x10.csv", "DataParams - Sheet1.csv")
