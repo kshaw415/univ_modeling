@@ -13,7 +13,7 @@ import random
 import csv 
 
 
-def write_to_csv(seed, timesteps, num_s, num_i, num_iso, num_masked): 
+def write_to_csv(seed, timesteps, num_s, num_i, num_iso, num_masked, simID): 
     """
     Names and writes output data to a unique csv file 
     Inputs: 
@@ -24,7 +24,7 @@ def write_to_csv(seed, timesteps, num_s, num_i, num_iso, num_masked):
     """
     data = zip(timesteps, num_s, num_i, num_iso, num_masked)
 
-    file_name = f'{seed}_output.csv' 
+    file_name = f'{simID}_{seed}_output.csv' 
 
     with open(file_name, mode='w', newline='') as file: 
         writer = csv.writer(file) 
@@ -49,20 +49,21 @@ def run_model(seed, barriers, parameters):
     PARAM_distance_threshold = parameters[4]
     PARAM_symptom_threshold = parameters[5]
     PARAM_num_steps = parameters[13]
-    PARAM_b0 = parameters[7]
-    PARAM_b1 = parameters[8]
-    PARAM_b2 = parameters[9]
-    PARAM_b3 = parameters[10]
-    PARAM_b4 = parameters[11]
+    PARAM_p = parameters[7]
+    PARAM_maski = parameters[8]
+    PARAM_maskj = parameters[9]
+    PARAM_maskij = parameters[10]
+    PARAM_symptom_infect = parameters[11]
     PARAM_immunity = parameters[14] 
-
+    PARAM_time_step = parameters[15]
+    PARAM_recovery = parameters[16]
     ## params for Agent class only 
     # boundaries for simulation space 
     PARAM_xboundaries = [parameters[0], parameters[1]]
     PARAM_yboundaries = [parameters[2], parameters[3]]
 
     PARAM_masking = parameters[6] # True if masking is turned on 
-
+    PARAM_sim_id = parameters[17]
 
     ## Initiate variables 
     agents = []
@@ -73,7 +74,7 @@ def run_model(seed, barriers, parameters):
     for i in range(PARAM_num_agents): 
         agent_id = i
         infected_status = np.random.choice([0, 1]) 
-        agent = Agent.Agent(agent_id, infected_status, PARAM_masking, PARAM_xboundaries, PARAM_yboundaries)
+        agent = Agent.Agent(agent_id, infected_status, PARAM_masking, PARAM_xboundaries, PARAM_yboundaries, PARAM_immunity)
         agents.append(agent)
         agent_positions.append(agent.position)
 
@@ -86,7 +87,7 @@ def run_model(seed, barriers, parameters):
     tot_masked = []
 
     # Perform random walk for a certain number of steps
-    # num_steps = 1000 #28800 is 1 day (8 hours) 
+    # num_steps = 1000 #1 day is 960 at 30sec/time step --> 13440 for 2 weeks 
     for step in range(PARAM_num_steps):
         num_sus = 0
         num_inf = 0 
@@ -100,18 +101,18 @@ def run_model(seed, barriers, parameters):
             if agent.isolating: 
                 agent.infected_time += 1
                 agent.symptom_time += 1
-                if agent.symptom_time >= 200: 
+                if agent.infected_time >= PARAM_recovery or agent.symptom_time >= PARAM_recovery: 
                     agent.recover(PARAM_immunity) 
             else: 
                 # Take random step forward 
-                agent.random_walk(barriers)
+                agent.random_walk(barriers, PARAM_time_step)
                 agent = agent.agent_distance(agents, step, PARAM_distance_threshold, barriers) 
 
                 if i == len(agents) - 1: 
                     break 
                 else: 
                 # Determine if an agent becomes infected 
-                    if agent.get_infected(PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
+                    if agent.get_infected(PARAM_p, PARAM_maski, PARAM_maskj, PARAM_maskij, PARAM_symptom_infect): 
                         # increase infected time
                         agent.infected_time += 1
                         
@@ -121,8 +122,8 @@ def run_model(seed, barriers, parameters):
                             agent.isolating = agent.self_isolate()
 
                         # determine if agent has recovered 
-                        elif agent.symptom_time >= 200: # symptoms 
-                            agent.recover(False) # TODO: param_immuity input
+                        elif agent.infected_time >= PARAM_recovery or agent.symptom_time >= PARAM_recovery: # symptom recovery 3 days
+                            agent.recover(PARAM_immunity) 
                     
             # output data
             if agent.infected == 0: 
@@ -144,7 +145,4 @@ def run_model(seed, barriers, parameters):
 
     # Output Data to CSV File 
     x_timestep = [i for i in range(1, PARAM_num_steps)] 
-    write_to_csv(seed, x_timestep, tot_sus, tot_inf, tot_iso, tot_masked) # TODO: number of people masked 
-
-
-# run_model(42, "params - 10x10.csv", "DataParams - Sheet1.csv")
+    write_to_csv(seed, x_timestep, tot_sus, tot_inf, tot_iso, tot_masked, PARAM_sim_id) 

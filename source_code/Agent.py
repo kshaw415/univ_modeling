@@ -94,7 +94,8 @@ class Agent:
     
     '''
 
-    def __init__(self, id: int, infected: int, PARAM_masking: bool, xboundaries : list, yboundaries : list): 
+    def __init__(self, id: int, infected: int, PARAM_masking: bool, xboundaries : list, yboundaries : list, 
+                 immune): 
         '''
         Initialization method for Agent class
 
@@ -121,7 +122,7 @@ class Agent:
         self.can_symptoms = False # false if asymptomatic infection, True if eventually will become symptomatic 
         self.symptomatic = False # Symptom flagger, False if no symptoms, True if currently presenting symptoms
         self.symptom_time = 0 
-        self.immune = False # True --> 
+        self.immune = immune 
         
         # intervention
         if PARAM_masking: 
@@ -137,7 +138,7 @@ class Agent:
     def __str__(self): 
         return f"{self.id} infected_status: {self.infected}"
     
-    def random_walk(self, barriers): 
+    def random_walk(self, barriers, time_step): 
         '''
         Random walk algorithm. 
         input: 
@@ -145,7 +146,7 @@ class Agent:
         output: 
             self.position --> new position coordinates for Agent
         '''
-        step_size = 1; # STEP SIZE, CHANGE IF DESIRED 
+        step_size = time_step 
         
         angle = np.random.uniform(0, 2 * np.pi)
         new_x = self.position[0] + step_size * np.cos(angle)
@@ -205,30 +206,42 @@ class Agent:
         return self
     
     
-    def get_infected(self, PARAM_b0, PARAM_b1, PARAM_b2, PARAM_b3, PARAM_b4): 
+    def get_infected(self, p, i, j, ij, symp_effect): 
         """
         Determines if an Agent that is exposed becomes infected. Update status 
 
+        
+        given inputs: 
+            p
+            effect of mask_i
+            effect of mask_j
+            effect of maskij
+            effect of symptom
+        
         Input: 
 
         Output: 
 
-        """
-        def logodds(me_i, me_j, symp_status):    
+        """        
+        def qlogis(p): 
             """
-            Function that calculates the log odds based on the given parameters 
-            
-            Inputs: 
-                me_i --> Boolean, Agent (denoted as i) masking status
-                me_j --> Boolean, infected Agent (denoted as j) masking status 
-                symp_status --> Boolean, symptomatic status of other Agent 
-
-            Outputs: 
-
+            calculates ln(p/1-p)
             """
-            # TODO: can put beta for being symptomatic (more infectious sympt than asymp)
-            result = PARAM_b0 + PARAM_b1*me_i + PARAM_b2*me_j + PARAM_b3*me_i*me_j + PARAM_b4*symp_status
-            return result 
+            return math.log(p/(1-p))
+        
+        def logodds(p, i, j, ij, symp, me_i, me_j, j_symp_status): 
+            """
+            Calculates log odds of direct transmission given p (probability of transmission)
+            """
+            # define parameters
+            b0 = qlogis(p) 
+            # 1 + delta --> -0.4 for 40% decrease
+            b1 = qlogis(p*(1+i)) - qlogis(p)
+            b2 = qlogis(p*(1+j)) - qlogis(p)
+            b3 = qlogis(p*(1+ij)) - qlogis(p) 
+            b4 = qlogis(p*(1+symp)) - qlogis(p)
+            return b0 + b1 * me_i + b2 * me_j + b3 * me_i * me_j + b4*j_symp_status
+        
         
         def flag(status): 
             """
@@ -250,13 +263,14 @@ class Agent:
             return False 
 
         else: 
+
             for agent_j in self.contacts:
                 # identify if masked
                 me_j = flag(agent_j.masked)
                 me_i = flag(self.masked)
-                symp = flag(self.symptomatic)
+                symp_flag = flag(agent_j.symptomatic)
                 # calculate logodds 
-                output = logodds(me_i, me_j, symp)
+                output = logodds(p, i, j, ij, symp_effect, me_i, me_j, symp_flag)
                 p = 1 / (1 + math.exp(-output))
                 
                 # roll dice: determine if an infection event occurs (Bernoulli)
@@ -276,7 +290,6 @@ class Agent:
         """
         Determines if an agent that is infected becomes symptomatic. 
         # TODO: parameterize (user input) this value for symptom_threshold
-
 
         assign symptomatic flag once hit time of determined 
         check if currently >= symptom time threshold (if yes, become symptomatic) 
@@ -307,7 +320,6 @@ class Agent:
     def recover(self, param_immunity): 
         """
         Recover based on time infected 
-        # TODO: Update (3/28)
         """
         self.infected = 0 
         self.can_symptoms = False

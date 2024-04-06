@@ -24,39 +24,29 @@ def generate_seeds(n):
 
     return seeds 
 
-seeds = generate_seeds(4) # 
 
-params_df = pd.read_csv("DataParams - Sheet1 (1).csv")
 
 def run(row_seed_pair): 
     row, seed = row_seed_pair
     parameters = row 
     simulator.run_model(seed, "barrier.csv", parameters) 
 
-params_seed_pairs = zip(params_df.values, seeds) 
 
 if __name__ == "__main__": 
-    # num_processes = 10 # number of processes to parallelize
-    # seeds = generate_seeds(num_processes)
     start = time.time()
+    
+    seeds = generate_seeds(4) 
+
+    params_df = pd.read_csv("DataParams - test2 (1).csv")
+    params_seed_pairs = zip(params_df.values, seeds) 
+
     # parallelized 
-    with multiprocessing.Pool() as pool: 
+    with multiprocessing.Pool(5) as pool: 
         pool.map(run, params_seed_pairs)
+
         
     end = time.time()
     print(end - start)
+    print(multiprocessing.cpu_count())
     
-    """
-    write a loop for each scenario 
-    run function should include for loop set up 
-        this seed, this barrier, this param row, then run 
 
-    do a loop of 10 on local machine, then try oscar 
-
-    do some timing/bench marking so we can figure out how long 
-        do interactive session first (if takes longer than 15 min) call seiji and 
-            do sbatch 
-        write file to call handler with specific arguments for seed objects, barriers, params
-            have sbatch header to say this is # cores needed, cpus, etc. 
-            need 28 cpus, submit from command line 
-    """
