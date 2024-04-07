@@ -1,4 +1,3 @@
-import random 
 import simulator
 import numpy as np
 import multiprocessing
@@ -29,24 +28,23 @@ def generate_seeds(n):
 def run(row_seed_pair): 
     row, seed = row_seed_pair
     parameters = row 
-    simulator.run_model(seed, "barrier.csv", parameters) 
+    simulator.run_model(seed, "params - 10x10.csv", parameters) 
 
 
 if __name__ == "__main__": 
     start = time.time()
     
-    seeds = generate_seeds(4) 
+    seeds = generate_seeds(800) 
 
     params_df = pd.read_csv("DataParams - test2 (1).csv")
     params_seed_pairs = zip(params_df.values, seeds) 
 
     # parallelized 
-    with multiprocessing.Pool(5) as pool: 
+    with multiprocessing.Pool(8) as pool: 
         pool.map(run, params_seed_pairs)
 
         
     end = time.time()
     print(end - start)
-    print(multiprocessing.cpu_count())
     
 

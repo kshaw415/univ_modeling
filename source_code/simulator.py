@@ -1,4 +1,3 @@
-import pytest
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
@@ -32,14 +31,14 @@ def write_to_csv(seed, timesteps, num_s, num_i, num_iso, num_masked, simID):
         writer.writerows(data)
 
 
-def run_model(seed, barriers, parameters): 
+def run_model(seed, barrier_file, parameters): 
     """
     Code to run a single simulation 
     """   
     random.seed(seed) # set the seed 
 
     ## Receive all data from params file ## 
-    barriers = params.barrier_data("params - RoomsOpen.csv")
+    barriers = params.barrier_data(barrier_file)
 
     # xbounds, ybounds, distance_thresh, symptom_thresh, masking, \
     #     b0, b1, b2, b3, b4, num_agents, num_steps, immunity = params.parse_data(param_file)
@@ -77,8 +76,6 @@ def run_model(seed, barriers, parameters):
         agent = Agent.Agent(agent_id, infected_status, PARAM_masking, PARAM_xboundaries, PARAM_yboundaries, PARAM_immunity)
         agents.append(agent)
         agent_positions.append(agent.position)
-
-
 
     # data for graphing/analysis 
     tot_sus = []
