@@ -1,5 +1,3 @@
-MinX,MaxX,MinY,MaxY,Distance_threshold,Symptom_threshold,masking,b0,b1,b2,b3,b4,num_agents,num_steps,immunity flag,time_step
--15,15,-13,13,6,0.6,FALSE,-4.95,0,0,0,-1.237,50,20160,FALSE,10
--15,15,-13,13,6,0.2,FALSE,-4.95,0,0,0,-1.237,50,20160,FALSE,10
--15,15,-13,13,6,0.6,TRUE,-4.95,0,0,0,-1.237,50,20160,FALSE,10
--15,15,-13,13,6,0.6,FALSE,-4.95,0,0,0,-1.237,50,20160,TRUE,10
+version https://git-lfs.github.com/spec/v1
+oid sha256:eb073c76fa656a725db17573f0eed2451b71eb03146ce672ce960251eb20a850
+size 378

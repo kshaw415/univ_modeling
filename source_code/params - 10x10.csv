@@ -1,5 +1,3 @@
-Barrier Start ,Barrier End
-"(-10, 0) ","(-10, 10) "
-"(-10, 10) ","(0, 10) "
-"(0, 10) ","(0, 0) "
-"(0, 0) ","(-10, 0)"
+version https://git-lfs.github.com/spec/v1
+oid sha256:0d924dfb2118000d419252a918845b95ba7ab79c710813c37878269695bda3f8
+size 121

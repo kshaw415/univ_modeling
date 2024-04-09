@@ -1,13 +1,3 @@
-# univ_modeling
-Modeling University disease transmission with ABMs
-
-Goal/Focus: 
-- go in depth in transmission of COVID specifically 
-    - transmission dynamics 
-- add in vaccination status
-- add in masking as a toggle (yes masks, masking in X scenarios?)
-- analyzing data received from ABM (figures on time-based plots, etc. )  
-
-## To-Do: 
-- det_transmission: return True/False based on infected status (can seem misleading with function name)
-- Each time step need to calculate exposure status (ie after 3 days exposure no transmission, go back to susceptible) 
+version https://git-lfs.github.com/spec/v1
+oid sha256:56be2ce9d32d0aa1e064775d797c3f5cf9ce6ba7be83e242846e2d50588c68d7
+size 565

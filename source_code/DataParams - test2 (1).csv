@@ -1,5 +1,3 @@
-MinX,MaxX,MinY,MaxY,Distance_threshold,Symptom_threshold,masking,p,effect_i,effect_j,effect_ij,effect_sympt,num_agents,num_steps,immunity flag,time_step,infection_recovery
--15,15,-13,13,6,0.08,FALSE,0.0016,-0.1,-0.3,-0.8,0.3,50,13440,FALSE,30,4800
--15,15,-13,13,6,0.08,FALSE,0.0016,-0.1,-0.3,-0.8,0.3,50,13440,FALSE,30,4800
--15,15,-13,13,6,0.08,TRUE,0.0016,-0.1,-0.3,-0.8,0.3,50,13440,FALSE,30,4800
--15,15,-13,13,6,0.08,FALSE,0.0016,-0.1,-0.3,-0.8,0.3,50,13440,TRUE,30,4800
+version https://git-lfs.github.com/spec/v1
+oid sha256:baacc23bf0c7e48e1b3a1079ac835a87bd0ef4fd8ac565969a3654dc2b6ea18b
+size 477
