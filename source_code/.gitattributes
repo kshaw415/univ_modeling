@@ -1,1 +1,2 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
+source_code/output_data/Agent_Infections.csv filter=lfs diff=lfs merge=lfs -text
